@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "khetflow-38a6e": {
+      "hosting": {
+        "rider": [
+          "rider-portal-yourproject"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

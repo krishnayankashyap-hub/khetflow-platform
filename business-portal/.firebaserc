@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "khetflow-38a6e"
+  },
+  "targets": {
+    "khetflow-38a6e": {
+      "hosting": {
+        "business": [
+          "business-portal-yourproject"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
