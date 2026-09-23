@@ -27,7 +27,7 @@
 
 <div align="center">
 
-# 🧅 The “Two Onions” Problem
+# 🧅 The “Two Onions”/Any Harvest Problem
 
 *Imagine standing in a bustling vegetable market. Before you sit **two onions**:*
 
