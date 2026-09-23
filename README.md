@@ -142,21 +142,30 @@ const payload = {
 
 <br/>
 
+<br/>
+
+<br/>
+
 ---
 
-### <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Delivery%20Truck.png" alt="Delivery Truck" width="28" height="28" /> 3. AI-Driven “Milk Run” Logistics
+### <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Delivery%20Truck.png" alt="Delivery Truck" width="28" height="28" /> 3. The Logistics Portal (AI “Milk-Run” Routing)
 
-Transportation is one of the biggest financial burdens for small farmers, preventing them from accessing distant, higher-paying markets. **KhetFlow solves this using AI-optimized transport pooling.**
+Transportation is the biggest financial hurdle for small farmers, often making it too expensive to sell small batches of crops. **KhetFlow solves this using AI-optimized transport pooling.**
+
+**How it works (The "Half-Empty" Example):** 
+If a commercial truck or local tempo is driving from Point A to Point C half-empty, our AI dynamically routes it to pick up small 50kg crates from farmers at Point B along the way. 
+
+This allows drivers to monetize their empty space, while farmers get their produce delivered without having to rent an entire truck.
 
 <div align="center">
 
 | 📍 Step 1 | 📍 Step 2 | 📍 Step 3 | 📍 Step 4 |
 | :---: | :---: | :---: | :---: |
-| **Groups nearby farmers** dynamically | **Creates optimized pickup routes** | **Aggregates produce** efficiently | **Delivers directly** to B2B buyers |
+| **Finds half-empty trucks** locally | **Groups nearby farmers** needing transport | **Creates smart pickup routes** along the way | **Delivers directly** to B2B buyers |
 
 </div>
 
-> **🌱 Result:** Lower transportation costs, reduced fuel usage, faster delivery cycles, and significantly **higher farmer profit margins** through shared logistics coordination.
+> **🌱 Result:** Drivers make extra money, fuel waste is reduced, and **farmers save over 60% on shipping costs** through shared logistics!
 
 <br/>
 
