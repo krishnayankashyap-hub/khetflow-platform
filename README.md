@@ -67,7 +67,6 @@ This rejected produce doesn't just mean lost vegetables. It directly causes:
 
 ---
 
-# 🏆 Smart India Hackathon Submission (SIH26132)
 **Strengthening Market Linkage and Price Discovery For Farmers**
 
 **Welcome to the KhetFlow repository!** To ensure clean evaluation of our architecture, we have separated our environments. Please select the portal you would like to view:
