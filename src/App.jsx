@@ -327,7 +327,17 @@ export default function KhetFlowFullPortfolio() {
     "rotate-2 -translate-y-3"
   ];
 
-  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  const scrollTo = (id) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    const navOffset = window.innerWidth < 768 ? 95 : 110;
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
+  };
 
   return (
     <>
@@ -426,7 +436,7 @@ export default function KhetFlowFullPortfolio() {
         </section>
 
         {/* --- PORTALS SECTION --- */}
-        <main id="portals" className="py-12 md:py-24 px-3 md:px-6 max-w-7xl mx-auto relative">
+        <main id="portals" className="py-12 md:py-24 px-3 md:px-6 max-w-7xl mx-auto relative scroll-mt-24 md:scroll-mt-32">
           <div className="text-center mb-6 md:mb-14">
               <h2 className="text-2xl md:text-5xl font-black text-slate-900 mb-1.5 md:mb-2 tracking-tighter">Select your portal</h2>
               <p className="text-slate-400 font-bold text-xs md:text-sm">अपना पोर्टल चुनें और शुरुआत करें</p>
@@ -564,7 +574,7 @@ export default function KhetFlowFullPortfolio() {
         </main>
 
         {/* --- KHETSCORE FINTECH SECTION --- */}
-        <section id="khetscore" className="py-10 md:py-24 px-3 md:px-6 bg-slate-50 border-y border-slate-100 text-center relative overflow-hidden">
+        <section id="khetscore" className="py-10 md:py-24 px-3 md:px-6 bg-slate-50 border-y border-slate-100 text-center relative overflow-hidden scroll-mt-24 md:scroll-mt-32">
           <div className="max-w-4xl mx-auto relative z-10">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] md:text-xs font-black mb-4 md:mb-8 border border-emerald-200 shadow-sm">
                   <Banknote size={15} /> KhetScore Fintech Engine
@@ -595,7 +605,7 @@ export default function KhetFlowFullPortfolio() {
         </section>
 
                       {/* --- PRICE DISCOVERY SECTION --- */}
-        <section id="pricediscovery" className="py-10 md:py-24 px-3 md:px-6 bg-white border-b border-slate-100 relative overflow-hidden">
+        <section id="pricediscovery" className="py-10 md:py-24 px-3 md:px-6 bg-white border-b border-slate-100 relative overflow-hidden scroll-mt-24 md:scroll-mt-32">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50 rounded-full blur-3xl opacity-40 pointer-events-none -translate-y-1/2 translate-x-1/3" />
           <div className="max-w-6xl mx-auto relative z-10">
 
@@ -659,7 +669,7 @@ export default function KhetFlowFullPortfolio() {
         {/* --- END PRICE DISCOVERY SECTION --- */}
 
         {/* --- DUAL SCROLLING VALIDATION SECTION --- */}
-        <section id="Achievements" className="py-10 md:py-24 bg-white relative overflow-hidden group/marquee">
+        <section id="Achievements" className="py-10 md:py-24 bg-white relative overflow-hidden group/marquee scroll-mt-24 md:scroll-mt-32">
           <div className="max-w-7xl mx-auto px-4 md:px-6 mb-6 md:mb-12">
             <div className="text-center">
               <div className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] md:text-xs font-black mb-3 md:mb-6 border border-amber-200 shadow-sm">
