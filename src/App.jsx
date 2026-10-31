@@ -253,18 +253,18 @@ export default function KhetFlowFullPortfolio() {
         {/* --- HERO SECTION --- */}
         <section className="pt-32 pb-12 px-6 bg-slate-50 relative overflow-hidden">
           
-          {/* --- BACKGROUND VIDEO WITH DIMMER OVERLAY --- */}
+          {/* --- BACKGROUND VIDEO --- */}
           <video 
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="absolute inset-0 w-full h-full object-cover opacity-15 md:opacity-20 z-0 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 md:opacity-25 z-0 pointer-events-none"
           >
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
-          {/* Dimmer overlay to ensure high text contrast while keeping video visible */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/50 to-slate-50/20 pointer-events-none z-0" />
+          {/* Subtle wash so text is crisp while background video remains clearly visible */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/15 to-transparent pointer-events-none z-0" />
 
           <div className="max-w-7xl mx-auto relative z-10 text-center animate-fade-in-up">
             <div className="mb-4 md:mb-6 inline-block">
