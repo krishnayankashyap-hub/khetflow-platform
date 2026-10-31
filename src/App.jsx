@@ -109,8 +109,8 @@ export default function KhetFlowFullPortfolio() {
     },
     {
       id: 'rider',
-      title: 'Rider Portal',
-      hindi: 'राइडर पोर्टल (Fleet)',
+      title: 'Logistics Portal',
+      hindi: 'लॉजिस्टिक्स पोर्टल (Fleet)',
       role: 'Smart Fleet',
       desc: 'Join our logistics network. Use transport pooling to reduce fuel costs and earn daily commissions.',
       hindiDesc: 'डिलीवरी नेटवर्क से जुड़ें, ट्रक शेयर करें और रोज़ाना पक्की कमाई करें।',
@@ -253,20 +253,31 @@ export default function KhetFlowFullPortfolio() {
         {/* --- HERO SECTION --- */}
         <section className="pt-32 pb-12 px-6 bg-slate-50 relative overflow-hidden">
           
-          {/* --- BACKGROUND VIDEO --- */}
+          {/* --- BACKGROUND VIDEO WITH DIMMER OVERLAY --- */}
           <video 
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="absolute inset-0 w-full h-full object-cover opacity-10 z-0 pointer-events-none"
+            className="absolute inset-0 w-full h-full object-cover opacity-15 md:opacity-20 z-0 pointer-events-none"
           >
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
+          {/* Dimmer overlay to ensure high text contrast while keeping video visible */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/50 to-slate-50/20 pointer-events-none z-0" />
 
           <div className="max-w-7xl mx-auto relative z-10 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-emerald-100 text-emerald-700 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-6 shadow-sm">
-              🌍 Transforming ₹90,000+ Crore of India's Food Waste into Farmer Wealth & Business Profit
+            <div className="mb-4 md:mb-6 inline-block">
+              <p className="text-xs sm:text-sm md:text-base font-extrabold tracking-normal text-slate-800">
+                Transforming{' '}
+                <span className="text-emerald-700 font-black relative inline-block mx-0.5">
+                  ₹90,000+ Crore
+                  <svg className="absolute -bottom-1.5 left-0 w-full h-2 text-emerald-500" viewBox="0 0 100 8" preserveAspectRatio="none">
+                    <path d="M0 4 Q 25 1 50 4 T 100 4" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+                  </svg>
+                </span>{' '}
+                of India's Food Waste into Farmer Wealth
+              </p>
             </div>
             <h1 className="text-4xl md:text-8xl font-black tracking-tighter mb-4 leading-[1.1] relative inline-block">
               Kisaan Se <span className="text-emerald-600 relative">Kitchen Tak
@@ -275,24 +286,32 @@ export default function KhetFlowFullPortfolio() {
                 </svg>
               </span>
             </h1>
-            <h2 className="text-xl md:text-4xl font-bold text-slate-400 mb-2 mt-4 text-center">
-              भारत की पहली <span className="text-slate-800 uppercase tracking-tighter">Imperfect Produce - Ai Driven </span> B2B Supply Chain.
+            <h2 className="text-xl md:text-4xl font-extrabold text-slate-800 mb-2 mt-4 text-center">
+              भारत की पहली <span className="text-slate-950 uppercase tracking-tighter">Imperfect Produce - Ai Driven </span> B2B Supply Chain.
             </h2>
-            <p className="text-sm md:text-lg font-bold text-emerald-600 italic mb-12 text-center">
+            <p className="text-sm md:text-lg font-black text-emerald-700 italic mb-8 md:mb-12 text-center">
               (फेंकने वाले Grade B & C फल और सब्जियों का सबसे बड़ा मार्केटप्लेस)
             </p>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 max-w-5xl mx-auto px-2 relative z-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-6 max-w-5xl mx-auto px-2 relative z-10">
               {stats.map((stat, i) => (
-                <div key={i} className="bg-white/80 backdrop-blur-sm p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center hover:shadow-xl transition-all duration-500">
-                  <div className="mb-2 md:mb-4 p-2 md:p-3 bg-slate-50 rounded-lg">
-                    {i === 1 ? <CloudRain className="w-4 h-4 md:w-6 md:h-6 text-emerald-500" /> : <LineChart className={`w-4 h-4 md:w-6 md:h-6 ${stat.color}`} />}
+                <div 
+                  key={i} 
+                  className="bg-white/40 backdrop-blur-md p-3.5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex flex-col items-center hover:bg-white/60 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className={`mb-1.5 md:mb-4 p-2 md:p-3 rounded-xl backdrop-blur-sm ${
+                    i === 0 ? 'bg-rose-500/15 text-rose-700 border border-rose-200/40' :
+                    i === 1 ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/40' :
+                    i === 2 ? 'bg-amber-500/15 text-amber-700 border border-amber-200/40' :
+                    'bg-blue-500/15 text-blue-700 border border-blue-200/40'
+                  }`}>
+                    {i === 1 ? <CloudRain className="w-4 h-4 md:w-6 md:h-6" /> : <LineChart className="w-4 h-4 md:w-6 md:h-6" />}
                   </div>
-                  <h3 className={`text-xl md:text-4xl font-black tracking-tighter ${stat.color}`}>
+                  <h3 className={`text-lg md:text-4xl font-black tracking-tight ${stat.color}`}>
                     {stat.prefix}{stat.value}{stat.suffix}
                   </h3>
-                  <p className="text-[8px] md:text-[10px] font-black text-slate-800 uppercase mt-1">{stat.label}</p>
-                  <p className="text-[7px] md:text-[9px] font-bold text-slate-400">{stat.hindi}</p>
+                  <p className="text-[9px] md:text-[10px] font-black text-slate-800 uppercase mt-1 text-center tracking-wide">{stat.label}</p>
+                  <p className="text-[8px] md:text-[9px] font-semibold text-slate-600 text-center">{stat.hindi}</p>
                 </div>
               ))}
             </div>
@@ -300,126 +319,174 @@ export default function KhetFlowFullPortfolio() {
         </section>
 
         {/* --- PORTALS SECTION --- */}
-        <main id="portals" className="py-16 md:py-24 px-6 max-w-7xl mx-auto relative">
-          <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-2 tracking-tighter">Select your portal</h2>
-              <p className="text-slate-400 font-bold text-sm">अपना पोर्टल चुनें और शुरुआत करें</p>
+        <main id="portals" className="py-12 md:py-24 px-3 md:px-6 max-w-7xl mx-auto relative">
+          <div className="text-center mb-6 md:mb-14">
+              <h2 className="text-2xl md:text-5xl font-black text-slate-900 mb-1.5 md:mb-2 tracking-tighter">Select your portal</h2>
+              <p className="text-slate-400 font-bold text-xs md:text-sm">अपना पोर्टल चुनें और शुरुआत करें</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {portals.map((portal) => (
-              <div 
-                key={portal.id}
-                onClick={() => {
-                  setRedirecting(portal.id);
-                  setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
-                }}
-                className={`group relative flex flex-col bg-white border-b-4 md:border-b-8 ${portal.accent === 'emerald' ? 'border-emerald-500' : portal.accent === 'amber' ? 'border-amber-500' : 'border-blue-500'} p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden`}
-              >
-                <div className="flex justify-between items-center mb-6 relative z-10">
-                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-3xl flex items-center justify-center border border-slate-100 shadow-sm ${portal.accent === 'emerald' ? 'bg-emerald-50 text-emerald-600' : portal.accent === 'amber' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>
-                    {portal.icon}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8">
+            {portals.map((portal) => {
+              const isEmerald = portal.accent === 'emerald';
+              const isAmber = portal.accent === 'amber';
+              
+              const topBorder = isEmerald 
+                ? 'border-t-4 border-t-emerald-600' 
+                : isAmber 
+                ? 'border-t-4 border-t-amber-500' 
+                : 'border-t-4 border-t-blue-600';
+
+              const iconContainer = isEmerald
+                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                : isAmber
+                ? 'bg-amber-50 text-amber-600 border border-amber-100'
+                : 'bg-blue-50 text-blue-600 border border-blue-100';
+
+              const accentColor = isEmerald ? 'text-emerald-700' : isAmber ? 'text-amber-700' : 'text-blue-700';
+
+              const btnClass = isEmerald
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                : isAmber
+                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
+
+              return (
+                <div 
+                  key={portal.id}
+                  onClick={() => {
+                    setRedirecting(portal.id);
+                    setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
+                  }}
+                  className={`group relative flex flex-col justify-between bg-white border border-slate-200/90 rounded-xl md:rounded-3xl p-2.5 sm:p-5 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ${topBorder}`}
+                >
+                  <div>
+                    <div className="flex justify-between items-center mb-2 md:mb-5">
+                      <div className={`w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl flex items-center justify-center ${iconContainer}`}>
+                        {React.cloneElement(portal.icon, { className: "w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7" })}
+                      </div>
+                      <span className="text-[7px] sm:text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded md:rounded-md tracking-tight uppercase">
+                        {portal.role}
+                      </span>
+                    </div>
+
+                    <div className="mb-1 md:mb-2">
+                      <h3 className="text-[11px] sm:text-lg md:text-2xl font-black text-slate-900 tracking-tight leading-tight">{portal.title}</h3>
+                      <p className={`font-bold text-[9px] sm:text-xs md:text-sm mt-0.5 ${accentColor}`}>{portal.hindi}</p>
+                    </div>
+                    
+                    <p className="text-slate-600 font-medium text-[8px] sm:text-xs md:text-sm mt-1.5 md:mt-3 leading-snug md:leading-relaxed">{portal.desc}</p>
+                    <p className="text-slate-400 font-semibold text-[7px] sm:text-[11px] md:text-xs mt-1 md:mt-2 leading-snug">{portal.hindiDesc}</p>
                   </div>
-                  <div className="flex gap-0.5">
-                     {[1,2,3].map(i => <Star key={i} size={8} className="text-amber-400 fill-amber-400" />)}
-                  </div>
+
+                  <button className={`mt-2.5 md:mt-6 w-full py-1.5 sm:py-2.5 md:py-3.5 rounded-lg md:rounded-xl font-black flex items-center justify-center gap-1 md:justify-between px-1.5 sm:px-3 md:px-6 transition-all duration-200 active:scale-[0.98] ${redirecting === portal.id ? 'bg-slate-800 text-white' : btnClass}`}>
+                    <span className="text-[9px] sm:text-xs md:text-sm truncate">
+                      {redirecting === portal.id ? 'Connecting...' : (
+                        <>
+                          <span className="hidden sm:inline">Go to Portal</span>
+                          <span className="sm:hidden">Open</span>
+                        </>
+                      )}
+                    </span>
+                    {redirecting === portal.id ? (
+                      <Loader2 className="animate-spin w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 shrink-0" />
+                    ) : (
+                      <ArrowRight className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+                    )}
+                  </button>
                 </div>
-
-                <h3 className="text-xl md:text-3xl font-black text-slate-900 mb-1 relative z-10">{portal.title}</h3>
-                <p className={`font-black text-[10px] md:text-sm mb-4 italic ${portal.accent === 'emerald' ? 'text-emerald-600' : portal.accent === 'amber' ? 'text-amber-600' : 'text-blue-600'}`}>{portal.hindi}</p>
-                
-                <p className="text-slate-500 font-medium text-xs md:text-sm mb-6 leading-relaxed">{portal.desc}</p>
-                <p className="text-slate-800 font-bold text-[10px] md:text-xs mb-6">{portal.hindiDesc}</p>
-
-                <button className={`mt-auto w-full py-3 md:py-5 rounded-xl md:rounded-2xl font-black flex items-center justify-between px-6 md:px-8 transition-all duration-300 shadow-md ${redirecting === portal.id ? 'bg-slate-800 text-white' : 'bg-slate-900 text-white hover:scale-105'}`}>
-                  <span className="text-xs md:text-base">{redirecting === portal.id ? 'Connecting...' : 'Go to Portal'}</span>
-                  {redirecting === portal.id ? <Loader2 className="animate-spin w-4 h-4" /> : <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </main>
 
         {/* --- KHETSCORE FINTECH SECTION --- */}
-        <section id="khetscore" className="py-24 px-6 bg-slate-50 border-y border-slate-100 text-center relative overflow-hidden">
+        <section id="khetscore" className="py-10 md:py-24 px-3 md:px-6 bg-slate-50 border-y border-slate-100 text-center relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black mb-8 border border-emerald-200 shadow-sm">
-                  <Banknote size={16} /> KhetScore Fintech Engine
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] md:text-xs font-black mb-4 md:mb-8 border border-emerald-200 shadow-sm">
+                  <Banknote size={15} /> KhetScore Fintech Engine
               </div>
-              <h2 className="text-4xl md:text-6xl font-black mb-8 tracking-tighter text-slate-900 uppercase">Making the Unbanked, <span className="text-emerald-600 italic">Bankable.</span></h2>
-              <p className="text-slate-500 text-lg md:text-xl font-bold leading-relaxed mb-16">
+              <h2 className="text-2xl md:text-6xl font-black mb-3 md:mb-8 tracking-tighter text-slate-900 uppercase">Making the Unbanked, <span className="text-emerald-600 italic">Bankable.</span></h2>
+              <p className="text-slate-500 text-xs md:text-xl font-bold leading-relaxed mb-6 md:mb-14 max-w-2xl mx-auto">
                   Farmers who sell Grade B & C produce build a secure digital footprint. 
                   Our <strong>KhetScore algorithm</strong> turns transaction data into credit worthiness.
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group">
-                      <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 border border-emerald-100 group-hover:rotate-12 transition-transform"><Wallet /></div>
-                      <h4 className="text-slate-900 font-black text-xl mb-3">For Farmers (लोन की सुविधा)</h4>
-                      <p className="text-sm text-slate-500 font-medium leading-relaxed">Build credit history by selling what was once wasted. Stop borrowing from moneylenders and access low-interest bank loans.</p>
+              <div className="grid grid-cols-2 gap-2.5 md:gap-8 text-left">
+                  <div className="p-3.5 md:p-8 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group flex flex-col justify-between">
+                      <div>
+                        <div className="w-8 h-8 md:w-12 md:h-12 bg-emerald-50 text-emerald-600 rounded-xl md:rounded-2xl flex items-center justify-center mb-2 md:mb-6 border border-emerald-100 group-hover:rotate-12 transition-transform"><Wallet className="w-4 h-4 md:w-6 md:h-6" /></div>
+                        <h4 className="text-slate-900 font-black text-xs md:text-xl mb-1 md:mb-3 leading-snug">For Farmers <span className="block text-[10px] md:text-sm font-semibold text-emerald-700">(लोन की सुविधा)</span></h4>
+                        <p className="text-[10px] md:text-sm text-slate-500 font-medium leading-relaxed">Build credit history by selling what was once wasted. Stop borrowing from moneylenders and access low-interest bank loans.</p>
+                      </div>
                   </div>
-                  <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group">
-                      <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 border border-blue-100 group-hover:rotate-12 transition-transform"><ShieldCheck /></div>
-                      <h4 className="text-slate-900 font-black text-xl mb-3">For Lenders (बैंकों का भरोसा)</h4>
-                      <p className="text-sm text-slate-500 font-medium leading-relaxed">We provide verified cash-flow data from B2B transactions. This allows banks to lend safely to rural farmers for the first time.</p>
+                  <div className="p-3.5 md:p-8 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group flex flex-col justify-between">
+                      <div>
+                        <div className="w-8 h-8 md:w-12 md:h-12 bg-blue-50 text-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center mb-2 md:mb-6 border border-blue-100 group-hover:rotate-12 transition-transform"><ShieldCheck className="w-4 h-4 md:w-6 md:h-6" /></div>
+                        <h4 className="text-slate-900 font-black text-xs md:text-xl mb-1 md:mb-3 leading-snug">For Lenders <span className="block text-[10px] md:text-sm font-semibold text-blue-700">(बैंकों का भरोसा)</span></h4>
+                        <p className="text-[10px] md:text-sm text-slate-500 font-medium leading-relaxed">We provide verified cash-flow data from B2B transactions. This allows banks to lend safely to rural farmers for the first time.</p>
+                      </div>
                   </div>
               </div>
           </div>
         </section>
 
                       {/* --- PRICE DISCOVERY SECTION --- */}
-        <section id="pricediscovery" className="py-24 px-6 bg-white border-b border-slate-100 relative overflow-hidden">
+        <section id="pricediscovery" className="py-10 md:py-24 px-3 md:px-6 bg-white border-b border-slate-100 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50 rounded-full blur-3xl opacity-40 pointer-events-none -translate-y-1/2 translate-x-1/3" />
           <div className="max-w-6xl mx-auto relative z-10">
 
-            <div className="text-center mb-16">
-              <p className="text-emerald-600 text-xs font-black uppercase tracking-widest mb-6">Agmarknet-Powered Price Discovery</p>
-              <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter text-slate-900 uppercase">
+            <div className="text-center mb-6 md:mb-16">
+              <p className="text-emerald-600 text-[10px] md:text-xs font-black uppercase tracking-widest mb-2 md:mb-6">Agmarknet-Powered Price Discovery</p>
+              <h2 className="text-2xl md:text-6xl font-black mb-3 md:mb-6 tracking-tighter text-slate-900 uppercase">
                 No More Middlemen. No More Guessing. <span className="text-emerald-600 italic">Real Price Discovery.</span>
               </h2>
-              <p className="text-slate-500 text-lg md:text-xl font-bold leading-relaxed max-w-3xl mx-auto">
-                Farmers selling Grade B & C produce had <strong className="text-slate-900">no formal market</strong> — forced into <strong className="text-slate-900">informal, unorganized selling</strong> with <strong className="text-rose-500">zero price visibility.</strong> Middlemen underpay by up to <strong className="text-rose-600 text-2xl md:text-3xl">80%.</strong> KhetFlow fixes this with live, government-backed <strong className="text-emerald-600">Agmarknet API</strong> data — giving every farmer <strong className="text-slate-900">transparent, real-time mandi rates</strong> before they sell a single kg.
+              <p className="text-slate-500 text-xs md:text-xl font-bold leading-relaxed max-w-3xl mx-auto">
+                Farmers selling Grade B & C produce had <strong className="text-slate-900">no formal market</strong> — forced into <strong className="text-slate-900">informal, unorganized selling</strong> with <strong className="text-rose-500">zero price visibility.</strong> Middlemen underpay by up to <strong className="text-rose-600 text-base md:text-3xl font-black">80%.</strong> KhetFlow fixes this with live, government-backed <strong className="text-emerald-600">Agmarknet API</strong> data — giving every farmer <strong className="text-slate-900">transparent, real-time mandi rates</strong> before they sell a single kg.
               </p>
             </div>
 
-            <div className="relative mb-16">
+            <div className="relative mb-6 md:mb-16">
               <div className="hidden md:block absolute top-6 left-[12.5%] right-[12.5%] h-px bg-slate-200 z-0" />
-              <div className="flex flex-col md:flex-row items-start justify-between gap-8 md:gap-0 relative z-10">
+              <div className="grid grid-cols-2 md:flex md:flex-row items-center md:items-start justify-between gap-3 md:gap-0 relative z-10">
                 {[
                   { step: '01', label: 'Live Mandi Rate', sub: 'Agmarknet API (Govt.)', color: 'bg-emerald-600' },
                   { step: '02', label: 'AI Grade Engine', sub: 'Llama-4 Vision detects Grade B/C', color: 'bg-slate-700' },
                   { step: '03', label: 'Season & Demand', sub: 'HORECA demand signals applied', color: 'bg-slate-700' },
                   { step: '04', label: 'Fair Price Suggested', sub: 'Shown to farmer instantly', color: 'bg-emerald-600' },
                 ].map((step, i) => (
-                  <div key={i} className="flex flex-col items-center text-center w-full md:w-1/4 px-4">
-                    <div className={`w-12 h-12 rounded-full ${step.color} text-white flex items-center justify-center font-black text-sm mb-4 shadow-md`}>
+                  <div key={i} className="flex flex-col items-center text-center p-2.5 md:p-0 bg-slate-50 md:bg-transparent rounded-xl md:rounded-none w-full md:w-1/4 border border-slate-100 md:border-none">
+                    <div className={`w-8 h-8 md:w-12 md:h-12 rounded-full ${step.color} text-white flex items-center justify-center font-black text-xs md:text-sm mb-1.5 md:mb-4 shadow-sm`}>
                       {step.step}
                     </div>
-                    <p className="font-black text-slate-900 text-sm md:text-base leading-tight mb-1">{step.label}</p>
-                    <p className="text-slate-400 text-[10px] md:text-xs font-semibold leading-snug">{step.sub}</p>
+                    <p className="font-black text-slate-900 text-xs md:text-base leading-tight mb-0.5">{step.label}</p>
+                    <p className="text-slate-400 text-[9px] md:text-xs font-semibold leading-snug">{step.sub}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-              <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group">
-                <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 border border-emerald-100 group-hover:rotate-12 transition-transform">
-                  <BarChart2 />
+            <div className="grid grid-cols-2 gap-2.5 md:gap-8 text-left">
+              <div className="p-3.5 md:p-8 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-emerald-50 text-emerald-600 rounded-xl md:rounded-2xl flex items-center justify-center mb-2 md:mb-6 border border-emerald-100 group-hover:rotate-12 transition-transform">
+                    <BarChart2 className="w-4 h-4 md:w-6 md:h-6" />
+                  </div>
+                  <h4 className="text-slate-900 font-black text-xs md:text-xl mb-1 md:mb-3 leading-snug">For Farmers <span className="block text-[10px] md:text-sm font-semibold text-emerald-700">(सही दाम की जानकारी)</span></h4>
+                  <p className="text-[10px] md:text-sm text-slate-500 font-medium leading-relaxed">
+                    Before KhetFlow, farmers had no platform to sell their Grade B & C harvest — it was informal, unreliable, and exhausting. A farmer sold Grade B onions for ₹2/kg because no one told them the live mandi rate was ₹9/kg. Now our AI reads live Agmarknet data and shows the fair price for their entire harvest — before any buyer negotiates. <strong className="text-slate-700 font-bold block mt-1">No more information asymmetry. No more wasted harvests.</strong>
+                  </p>
                 </div>
-                <h4 className="text-slate-900 font-black text-xl mb-3">For Farmers (सही दाम की जानकारी)</h4>
-                <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                  Before KhetFlow, farmers had no platform to sell their Grade B & C harvest — it was informal, unreliable, and exhausting. A farmer sold Grade B onions for ₹2/kg because no one told them the live mandi rate was ₹9/kg. Now our AI reads live Agmarknet data and shows the fair price for their entire harvest — before any buyer negotiates. <strong className="text-slate-700">No more information asymmetry. No more wasted harvests.</strong>
-                </p>
               </div>
-              <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group">
-                <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6 border border-amber-100 group-hover:rotate-12 transition-transform">
-                  <Tag />
+              <div className="p-3.5 md:p-8 bg-white rounded-2xl md:rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow group flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 md:w-12 md:h-12 bg-amber-50 text-amber-600 rounded-xl md:rounded-2xl flex items-center justify-center mb-2 md:mb-6 border border-amber-100 group-hover:rotate-12 transition-transform">
+                    <Tag className="w-4 h-4 md:w-6 md:h-6" />
+                  </div>
+                  <h4 className="text-slate-900 font-black text-xs md:text-xl mb-1 md:mb-3 leading-snug">For HORECA Buyers <span className="block text-[10px] md:text-sm font-semibold text-amber-700">(पारदर्शी खरीद)</span></h4>
+                  <p className="text-[10px] md:text-sm text-slate-500 font-medium leading-relaxed">
+                    Buyers stop wasting nights hunting at wholesale mandis. KhetFlow's price engine uses live Agmarknet rates, grade, season and demand to show both parties the same transparent AI-recommended price. <strong className="text-slate-700 font-bold block mt-1">100% fair. 0% middlemen.</strong>
+                  </p>
                 </div>
-                <h4 className="text-slate-900 font-black text-xl mb-3">For HORECA Buyers (पारदर्शी खरीद)</h4>
-                <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                  Buyers stop wasting nights hunting at wholesale mandis. KhetFlow's price engine uses live Agmarknet rates, grade, season and demand to show both parties the same transparent AI-recommended price. <strong className="text-slate-700">100% fair. 0% middlemen.</strong>
-                </p>
               </div>
             </div>
 
@@ -428,60 +495,60 @@ export default function KhetFlowFullPortfolio() {
         {/* --- END PRICE DISCOVERY SECTION --- */}
 
         {/* --- DUAL SCROLLING VALIDATION SECTION --- */}
-        <section id="Achievements" className="py-24 bg-white relative overflow-hidden group/marquee">
-          <div className="max-w-7xl mx-auto px-6 mb-12">
+        <section id="Achievements" className="py-10 md:py-24 bg-white relative overflow-hidden group/marquee">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 mb-6 md:mb-12">
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-black mb-6 border border-amber-200 shadow-sm">
-                <Trophy size={16} /> Track Record
+              <div className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-amber-100 text-amber-700 text-[10px] md:text-xs font-black mb-3 md:mb-6 border border-amber-200 shadow-sm">
+                <Trophy size={14} className="md:w-4 md:h-4" /> Track Record
               </div>
-              <h2 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter text-slate-900 uppercase">
+              <h2 className="text-2xl md:text-6xl font-black mb-2 md:mb-4 tracking-tighter text-slate-900 uppercase">
                 Validated by <span className="text-amber-500 italic">Ecosystems.</span>
               </h2>
-              <p className="text-slate-500 font-bold text-lg max-w-2xl mx-auto">
+              <p className="text-slate-500 font-bold text-xs md:text-lg max-w-2xl mx-auto leading-relaxed">
                 From securing 1st Prize at national hackathons to pitching in front of industry leaders, Team Astranova is making waves across India.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 md:gap-10 py-4 w-full">
+          <div className="flex flex-col gap-3 md:gap-10 py-2 md:py-4 w-full">
             
             {/* ROW 1: Moving Right to Left */}
-            <div className="flex gap-4 md:gap-8 w-max animate-marquee-left hover:[animation-play-state:paused]">
+            <div className="flex gap-3 md:gap-8 w-max animate-marquee-left hover:[animation-play-state:paused]">
               {row1Items.map((item, index) => (
                 <div 
                   key={`r1-${index}`} 
-                  className={`relative w-[200px] md:w-[260px] shrink-0 bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer hover:z-50 hover:scale-[1.15] hover:rotate-0 hover:translate-y-0 border border-slate-100 ${scatterStyles[index % scatterStyles.length]}`}
+                  className={`relative w-[210px] sm:w-[250px] md:w-[280px] shrink-0 bg-white p-2.5 pb-4 md:p-3.5 md:pb-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer hover:z-50 hover:scale-[1.05] border border-slate-100 ${scatterStyles[index % scatterStyles.length]}`}
                 >
-                  <div className={`w-full bg-slate-100 ${item.heightClass} relative overflow-hidden rounded-lg border border-slate-100`}>
+                  <div className="w-full bg-slate-100 h-28 sm:h-36 md:h-44 relative overflow-hidden rounded-lg border border-slate-100">
                     <img src={item.imgPlaceholder} alt={item.title} className="w-full h-full object-cover" />
                   </div>
-                  <div className="mt-3 px-1 md:mt-4 md:px-2">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Medal className="w-3 h-3 text-amber-500" />
-                      <p className="text-amber-500 text-[8px] md:text-[9px] font-black uppercase tracking-widest">{item.subtitle}</p>
+                  <div className="mt-2.5 px-1 md:mt-3.5 md:px-1.5">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Medal className="w-3 h-3 text-amber-500 shrink-0" />
+                      <p className="text-amber-500 text-[8px] md:text-[9px] font-black uppercase tracking-wider leading-tight">{item.subtitle}</p>
                     </div>
-                    <h3 className="text-slate-900 text-sm md:text-lg font-black tracking-tight leading-snug">{item.title}</h3>
+                    <h3 className="text-slate-900 text-xs md:text-sm font-black tracking-tight leading-snug">{item.title}</h3>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* ROW 2: Moving Left to Right */}
-            <div className="flex gap-4 md:gap-8 w-max animate-marquee-right hover:[animation-play-state:paused] ml-[-50%]">
+            <div className="flex gap-3 md:gap-8 w-max animate-marquee-right hover:[animation-play-state:paused] ml-[-50%]">
               {row2Items.map((item, index) => (
                 <div 
                   key={`r2-${index}`} 
-                  className={`relative w-[200px] md:w-[260px] shrink-0 bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer hover:z-50 hover:scale-[1.15] hover:rotate-0 hover:translate-y-0 border border-slate-100 ${scatterStyles[(index + 3) % scatterStyles.length]}`}
+                  className={`relative w-[210px] sm:w-[250px] md:w-[280px] shrink-0 bg-white p-2.5 pb-4 md:p-3.5 md:pb-6 rounded-xl md:rounded-2xl shadow-md md:shadow-lg hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer hover:z-50 hover:scale-[1.05] border border-slate-100 ${scatterStyles[(index + 3) % scatterStyles.length]}`}
                 >
-                  <div className={`w-full bg-slate-100 ${item.heightClass} relative overflow-hidden rounded-lg border border-slate-100`}>
+                  <div className="w-full bg-slate-100 h-28 sm:h-36 md:h-44 relative overflow-hidden rounded-lg border border-slate-100">
                     <img src={item.imgPlaceholder} alt={item.title} className="w-full h-full object-cover" />
                   </div>
-                  <div className="mt-3 px-1 md:mt-4 md:px-2">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Medal className="w-3 h-3 text-amber-500" />
-                      <p className="text-amber-500 text-[8px] md:text-[9px] font-black uppercase tracking-widest">{item.subtitle}</p>
+                  <div className="mt-2.5 px-1 md:mt-3.5 md:px-1.5">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Medal className="w-3 h-3 text-amber-500 shrink-0" />
+                      <p className="text-amber-500 text-[8px] md:text-[9px] font-black uppercase tracking-wider leading-tight">{item.subtitle}</p>
                     </div>
-                    <h3 className="text-slate-900 text-sm md:text-lg font-black tracking-tight leading-snug">{item.title}</h3>
+                    <h3 className="text-slate-900 text-xs md:text-sm font-black tracking-tight leading-snug">{item.title}</h3>
                   </div>
                 </div>
               ))}
