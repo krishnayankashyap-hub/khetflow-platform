@@ -132,41 +132,76 @@ export default function KhetFlowFullPortfolio() {
     },
     {
       id: 2,
-      title: "NIT Meghalaya - National 2nd Runner in Hardware,In Software Winner represented Assam and GCU",
-      subtitle: "Agritech Innovation challenge and Startup Sumit",
+      title: "NIT Meghalaya - National 2nd Runner in Hardware, In Software Winner",
+      subtitle: "Agritech Innovation challenge & Startup Summit",
       imgPlaceholder: "https://i.postimg.cc/c4SWLPyF/Screenshot-2026-04-15-at-2-34-35-PM.png",
       heightClass: "h-36 md:h-44"
     },
     {
       id: 3,
+      title: "IdeaHunt - Assam's First Ideathon (#1 Rank Across Assam)",
+      subtitle: "1st Prize Winner • 160+ Submissions",
+      imgPlaceholder: "/achievements/ideahunt-assam-1st-rank.png",
+      heightClass: "h-36 md:h-44"
+    },
+    {
+      id: 4,
+      title: "FAR AWAY 2026 International Hackathon - AgriTech Winner",
+      subtitle: "Global Round 2 Finalist • 15+ Countries (Zuup)",
+      imgPlaceholder: "/achievements/far-away-international-hackathon.png",
+      heightClass: "h-36 md:h-44"
+    },
+    {
+      id: 5,
+      title: "Invited as Judge for ESCOVENTURE (AEC Udbhavanam 14.0)",
+      subtitle: "2,500+ Footfall Summit • From Pitcher to Jury",
+      imgPlaceholder: "/achievements/escoventure-aec-judge.png",
+      heightClass: "h-36 md:h-44"
+    },
+    {
+      id: 6,
+      title: "National Buildathon 2026 (FORGE India & Nihar Skill)",
+      subtitle: "Govt. NSDC Certified & National Validation",
+      imgPlaceholder: "/achievements/national-buildathon-nsdc.png",
+      heightClass: "h-36 md:h-44"
+    },
+    {
+      id: 7,
+      title: "School2Startup National Innovation Challenge",
+      subtitle: "Top Innovator National Recognition",
+      imgPlaceholder: "/achievements/school2startup-national.png",
+      heightClass: "h-36 md:h-44"
+    },
+    {
+      id: 8,
       title: "NLAIC-2026 - 2nd National Model Representation Winner",
       subtitle: "Assam Engineering College",
       imgPlaceholder: "https://i.postimg.cc/gJF5SxmB/Screenshot-2026-04-04-at-10-26-18-PM.png",
       heightClass: "h-36 md:h-44"
     },
     {
-      id: 4,
+      id: 9,
       title: "Pitching to Jury Ahmedabad EDII",
       subtitle: "NER Rank 1",
       imgPlaceholder: "https://i.postimg.cc/DZ1zH4sm/Screenshot-2026-04-04-at-10-34-59-PM.png",
       heightClass: "h-36 md:h-44"
     },
     {
-      id: 5,
+      id: 10,
       title: "GUenARK SIH 1.0 - Recieved Seed Funding",
       subtitle: "Startup Expo & Hackathon",
       imgPlaceholder: "https://i.postimg.cc/W1xfzdDK/Screenshot-2026-04-04-at-10-26-54-PM.png",
       heightClass: "h-36 md:h-44"
     },
     {
-      id: 6,
+      id: 11,
       title: "National Agritech Hackathon Andhra Pradesh Validated Khetflow",
       subtitle: "Team Astranova On-Site",
       imgPlaceholder: "https://i.postimg.cc/ncP3SX1M/Screenshot-2026-04-04-at-10-27-35-PM.png",
       heightClass: "h-36 md:h-44"
     },
     {
-      id: 7,
+      id: 12,
       title: "Live Prototyping",
       subtitle: "Pitching & Demonstrations",
       imgPlaceholder: "https://i.postimg.cc/TPqqx1nr/Screenshot-2026-04-04-at-10-28-44-PM.png",
@@ -175,8 +210,8 @@ export default function KhetFlowFullPortfolio() {
   ];
 
   // Duplicating arrays so the infinite loop never runs out of content on large screens
-  const row1Items = [...achievements, ...achievements, ...achievements, ...achievements];
-  const row2Items = [...[...achievements].reverse(), ...[...achievements].reverse(), ...[...achievements].reverse(), ...[...achievements].reverse()];
+  const row1Items = [...achievements, ...achievements, ...achievements];
+  const row2Items = [...[...achievements].reverse(), ...[...achievements].reverse(), ...[...achievements].reverse()];
 
   // Helper array for scattered look
   const scatterStyles = [
