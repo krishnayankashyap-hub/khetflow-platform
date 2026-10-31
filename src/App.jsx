@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sprout, Store, Truck, ArrowRight, Leaf, CheckCircle2, 
   LineChart, Globe, Loader2, Wallet, ShieldCheck, Banknote, Star, CloudRain, Trophy, Medal,
-  TrendingUp, BarChart2, Tag
+  TrendingUp, BarChart2, Tag, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const teamMembers = [
@@ -68,12 +68,30 @@ export default function KhetFlowFullPortfolio() {
   const videoRef = useRef(null);
   const portalCarouselRef = useRef(null);
 
+  const portalIds = ['farmer', 'business', 'rider'];
+
   const scrollToPortalCard = (id) => {
     setActivePortalTab(id);
+    const container = portalCarouselRef.current;
     const el = document.getElementById(`portal-card-${id}`);
-    if (el) {
+    if (container && el) {
+      const left = el.offsetLeft - container.offsetLeft - (container.offsetWidth - el.offsetWidth) / 2;
+      container.scrollTo({ left, behavior: 'smooth' });
+    } else if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
+  };
+
+  const handlePrevPortal = () => {
+    const currentIndex = portalIds.indexOf(activePortalTab);
+    const prevIndex = (currentIndex - 1 + portalIds.length) % portalIds.length;
+    scrollToPortalCard(portalIds[prevIndex]);
+  };
+
+  const handleNextPortal = () => {
+    const currentIndex = portalIds.indexOf(activePortalTab);
+    const nextIndex = (currentIndex + 1) % portalIds.length;
+    scrollToPortalCard(portalIds[nextIndex]);
   };
 
   const onPortalCarouselScroll = () => {
@@ -160,38 +178,50 @@ export default function KhetFlowFullPortfolio() {
     {
       id: 'farmer',
       title: 'Farmer Portal',
-      hindi: 'किसान पोर्टल (B2B)',
-      role: 'Earn Extra Income',
-      desc: 'Sell your "Imperfect" Grade B & C produce that mandis reject. Turn waste into wealth and build KhetScore.',
-      hindiDesc: 'फेंकी जाने वाली फसल से अतिरिक्त कमाई करें और लोन के लिए अपना क्रेडिट स्कोर बनाएं।',
-      features: ['Extra Income from Waste', 'Build KhetScore for Loans'],
+      hindi: 'किसान पोर्टल (B2B Marketplace)',
+      role: 'Agri Producers',
+      desc: 'Sell surplus Grade B & C produce that mandis reject. Access transparent prices, eliminate middleman cuts, and build a credit profile for bank loans.',
+      hindiDesc: 'Grade B & C फसल के लिए मंडी भाव जानें, सीधे व्यापारियों को बेचें और बैंक लोन हेतु KhetScore बनाएं।',
+      features: [
+        'Real-Time Agmarknet Price Discovery',
+        'Extra Income from Grade B & C Produce',
+        'Build KhetScore for Bank Credit'
+      ],
       url: 'https://farmer-portal-yourproject.web.app/',
       accent: 'emerald',
-      icon: <Sprout className="w-6 h-6 text-emerald-600" />
+      icon: <Sprout className="w-5 h-5 text-emerald-700" />
     },
     {
       id: 'business',
       title: 'Business Portal',
-      hindi: 'व्यापारी पोर्टल (HORECA)',
-      role: 'Cheaper Materials',
-      desc: 'Source fresh, high-quality "Imperfect" produce at 40-60% discounted rates. Direct from farms.',
-      hindiDesc: 'सबसे सस्ता और ताज़ा कच्चा माल सीधा किसानों से खरीदें और अपना मुनाफा बढ़ाएं।',
-      features: ['Save 40-60% on Bills', 'Direct B2B Supply'],
+      hindi: 'व्यापारी पोर्टल (HORECA Procurement)',
+      role: 'Wholesale Buyers',
+      desc: 'Procure high-quality Grade B & C produce directly from farms. Cut raw material food costs by 40-60% with complete price visibility and reliable supply.',
+      hindiDesc: 'होटल, रेस्टोरेंट और कैटरर्स के लिए सीधा किसानों से ताज़ा माल। 40-60% सीधी बचत और पारदर्शी दाम।',
+      features: [
+        'Transparent Wholesale Price Discovery',
+        'Save 40-60% on Fresh Produce Bills',
+        'Farm-to-Kitchen Direct B2B Supply'
+      ],
       url: 'https://business-portal-yourproject.web.app/',
       accent: 'amber',
-      icon: <Store className="w-6 h-6 text-amber-600" />
+      icon: <Store className="w-5 h-5 text-amber-700" />
     },
     {
       id: 'rider',
       title: 'Logistics Portal',
-      hindi: 'लॉजिस्टिक्स पोर्टल (Fleet)',
+      hindi: 'लॉजिस्टिक्स पोर्टल (Fleet & Fleet Owners)',
       role: 'Smart Fleet',
-      desc: 'Join our logistics network. Use transport pooling to reduce fuel costs and earn daily commissions.',
-      hindiDesc: 'डिलीवरी नेटवर्क से जुड़ें, ट्रक शेयर करें और रोज़ाना पक्की कमाई करें।',
-      features: ['Smart Truck Pooling', 'Daily Instant Payouts'],
+      desc: 'Join our dedicated agricultural transit network. AI load pooling eliminates empty return trips, cuts diesel costs by up to 35%, and unlocks daily direct earnings.',
+      hindiDesc: 'डिलीवरी नेटवर्क से जुड़ें, लोड पूलिंग से खाली फेरे खत्म करें, 35% डीज़ल बचाएं और रोज़ाना पक्का भुगतान पाएं।',
+      features: [
+        'Dynamic Load & Route Optimization',
+        'Zero Empty Return Trips (Backhaul Cargo)',
+        'Guaranteed Daily Earnings & Instant Settlement'
+      ],
       url: 'https://rider-portal-yourproject.web.app/',
       accent: 'blue',
-      icon: <Truck className="w-6 h-6 text-blue-600" />
+      icon: <Truck className="w-5 h-5 text-blue-700" />
     }
   ];
 
@@ -402,55 +432,67 @@ export default function KhetFlowFullPortfolio() {
               <p className="text-slate-400 font-bold text-xs md:text-sm">अपना पोर्टल चुनें और शुरुआत करें</p>
           </div>
 
-          {/* Mobile Interactive Tab Bar */}
-          <div className="flex md:hidden items-center justify-center gap-1.5 p-1 bg-slate-100/90 rounded-2xl mb-5 max-w-sm mx-auto border border-slate-200/60 shadow-xs">
-            {portals.map((portal) => {
-              const isActive = activePortalTab === portal.id;
-              return (
-                <button
-                  key={portal.id}
-                  onClick={() => scrollToPortalCard(portal.id)}
-                  className={`flex-1 py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
-                    isActive 
-                      ? 'bg-white text-slate-900 shadow-sm' 
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  {React.cloneElement(portal.icon, { className: "w-3.5 h-3.5 shrink-0" })}
-                  <span className="truncate">{portal.title.split(' ')[0]}</span>
-                </button>
-              );
-            })}
+          {/* Interactive Portal Switcher with Slide Buttons */}
+          <div className="flex items-center justify-center gap-2 mb-6 max-w-md mx-auto">
+            <button
+              onClick={handlePrevPortal}
+              aria-label="Previous Portal"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0 shadow-xs active:scale-95 border border-slate-200/80"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 shadow-xs flex-1">
+              {portals.map((portal) => {
+                const isActive = activePortalTab === portal.id;
+                return (
+                  <button
+                    key={portal.id}
+                    onClick={() => scrollToPortalCard(portal.id)}
+                    className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      isActive 
+                        ? 'bg-white text-slate-900 shadow-sm font-black' 
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {React.cloneElement(portal.icon, { className: "w-3.5 h-3.5 shrink-0" })}
+                    <span className="truncate">{portal.title.split(' ')[0]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={handleNextPortal}
+              aria-label="Next Portal"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors shrink-0 shadow-xs active:scale-95 border border-slate-200/80"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
 
           <div 
             ref={portalCarouselRef}
             onScroll={onPortalCarouselScroll}
-            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 px-3 -mx-3 md:mx-0 md:px-0 scroll-smooth"
+            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 px-3 -mx-3 md:mx-0 md:px-0 scroll-smooth touch-pan-x"
           >
             {portals.map((portal) => {
               const isEmerald = portal.accent === 'emerald';
               const isAmber = portal.accent === 'amber';
               
-              const cardBorder = isEmerald 
-                ? 'bg-gradient-to-b from-emerald-50/70 via-white to-white border-emerald-200/80 hover:border-emerald-400 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.12)]'
+              const topBorder = isEmerald 
+                ? 'border-t-4 border-t-emerald-600' 
                 : isAmber 
-                ? 'bg-gradient-to-b from-amber-50/70 via-white to-white border-amber-200/80 hover:border-amber-400 shadow-[0_4px_24px_-4px_rgba(245,158,11,0.12)]'
-                : 'bg-gradient-to-b from-blue-50/70 via-white to-white border-blue-200/80 hover:border-blue-400 shadow-[0_4px_24px_-4px_rgba(59,130,246,0.12)]';
+                ? 'border-t-4 border-t-amber-600' 
+                : 'border-t-4 border-t-blue-600';
 
-              const iconBg = isEmerald
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+              const iconBox = isEmerald
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                 : isAmber
-                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
-                : 'bg-blue-600 text-white shadow-md shadow-blue-600/30';
+                ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                : 'bg-blue-50 text-blue-700 border border-blue-100';
 
               const accentColor = isEmerald ? 'text-emerald-700' : isAmber ? 'text-amber-700' : 'text-blue-700';
-
-              const btnClass = isEmerald
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25'
-                : isAmber
-                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-600/25'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/25';
 
               return (
                 <div 
@@ -460,48 +502,64 @@ export default function KhetFlowFullPortfolio() {
                     setRedirecting(portal.id);
                     setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
                   }}
-                  className={`w-[85vw] max-w-[340px] md:w-auto shrink-0 snap-center group relative flex flex-col justify-between border rounded-3xl p-5 md:p-8 transition-all duration-300 cursor-pointer overflow-hidden ${cardBorder}`}
+                  className={`w-[85vw] max-w-[340px] md:w-auto shrink-0 snap-center group relative flex flex-col justify-between bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-slate-300 rounded-2xl md:rounded-3xl p-5 md:p-8 transition-all duration-300 cursor-pointer overflow-hidden ${topBorder}`}
                 >
                   <div>
                     <div className="flex justify-between items-center mb-4 md:mb-5">
-                      <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center ${iconBg}`}>
-                        {React.cloneElement(portal.icon, { className: "w-6 h-6 md:w-7 md:h-7 text-white" })}
+                      <div className={`w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center ${iconBox}`}>
+                        {React.cloneElement(portal.icon, { className: "w-5 h-5 md:w-6 md:h-6" })}
                       </div>
-                      <span className="text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-white/90 border border-slate-200/80 text-slate-700 shadow-xs">
+                      <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-50 text-slate-700 border border-slate-200">
                         {portal.role}
                       </span>
                     </div>
 
                     <div className="mb-2">
-                      <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">{portal.title}</h3>
-                      <p className={`font-bold text-xs md:text-sm mt-0.5 ${accentColor}`}>{portal.hindi}</p>
+                      <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-snug">{portal.title}</h3>
+                      <p className={`font-semibold text-xs md:text-sm mt-0.5 ${accentColor}`}>{portal.hindi}</p>
                     </div>
 
+                    <div className="h-px bg-slate-100 my-3.5 md:my-4" />
+
                     {/* Features list */}
-                    <div className="space-y-1.5 my-3.5 md:my-4">
+                    <div className="space-y-2 mb-4">
                       {portal.features.map((feat, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs md:text-sm font-semibold text-slate-700">
-                          <CheckCircle2 className={`w-4 h-4 shrink-0 ${accentColor}`} />
+                        <div key={idx} className="flex items-start gap-2.5 text-xs md:text-sm font-semibold text-slate-800 leading-snug">
+                          <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${accentColor}`} />
                           <span>{feat}</span>
                         </div>
                       ))}
                     </div>
                     
-                    <p className="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">{portal.desc}</p>
-                    <p className="text-slate-400 font-semibold text-[11px] md:text-xs mt-1 leading-relaxed">{portal.hindiDesc}</p>
+                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed">{portal.desc}</p>
+                    <p className="text-slate-400 font-medium text-[11px] md:text-xs mt-1.5 leading-relaxed">{portal.hindiDesc}</p>
                   </div>
 
-                  <button className={`mt-5 md:mt-6 w-full py-3.5 px-6 rounded-2xl font-black text-xs md:text-sm flex items-center justify-between text-white transition-all shadow-md active:scale-98 ${redirecting === portal.id ? 'bg-slate-800' : btnClass}`}>
-                    <span>{redirecting === portal.id ? 'Connecting...' : 'Go to Portal'}</span>
+                  <button className="mt-5 md:mt-6 w-full py-3.5 px-5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-between text-white transition-all bg-slate-900 hover:bg-slate-800 shadow-sm active:scale-[0.99] group/btn">
+                    <span>{redirecting === portal.id ? 'Connecting to Portal...' : 'Go to Portal'}</span>
                     {redirecting === portal.id ? (
                       <Loader2 className="animate-spin w-4 h-4 shrink-0" />
                     ) : (
-                      <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 text-slate-400 group-hover/btn:text-white group-hover/btn:translate-x-1 transition-all" />
                     )}
                   </button>
                 </div>
               );
             })}
+          </div>
+
+          {/* Mobile Slide Indicator Dots */}
+          <div className="flex md:hidden items-center justify-center gap-2 mt-4">
+            {portalIds.map((id, idx) => (
+              <button
+                key={id}
+                onClick={() => scrollToPortalCard(id)}
+                aria-label={`Slide to portal ${idx + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  activePortalTab === id ? 'w-6 bg-slate-900' : 'w-2 bg-slate-300 hover:bg-slate-400'
+                }`}
+              />
+            ))}
           </div>
         </main>
 
