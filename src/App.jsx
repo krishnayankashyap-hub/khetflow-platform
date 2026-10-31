@@ -64,7 +64,31 @@ export default function KhetFlowFullPortfolio() {
   const [isLoading, setIsLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [activePortalTab, setActivePortalTab] = useState('farmer');
   const videoRef = useRef(null);
+  const portalCarouselRef = useRef(null);
+
+  const scrollToPortalCard = (id) => {
+    setActivePortalTab(id);
+    const el = document.getElementById(`portal-card-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  };
+
+  const onPortalCarouselScroll = () => {
+    const el = portalCarouselRef.current;
+    if (!el) return;
+    const scrollLeft = el.scrollLeft;
+    const cardWidth = el.offsetWidth * 0.75;
+    if (scrollLeft < cardWidth * 0.5) {
+      setActivePortalTab('farmer');
+    } else if (scrollLeft < cardWidth * 1.5) {
+      setActivePortalTab('business');
+    } else {
+      setActivePortalTab('rider');
+    }
+  };
 
   useEffect(() => {
     let minTimeDone = false;
@@ -378,72 +402,101 @@ export default function KhetFlowFullPortfolio() {
               <p className="text-slate-400 font-bold text-xs md:text-sm">अपना पोर्टल चुनें और शुरुआत करें</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8">
+          {/* Mobile Interactive Tab Bar */}
+          <div className="flex md:hidden items-center justify-center gap-1.5 p-1 bg-slate-100/90 rounded-2xl mb-5 max-w-sm mx-auto border border-slate-200/60 shadow-xs">
+            {portals.map((portal) => {
+              const isActive = activePortalTab === portal.id;
+              return (
+                <button
+                  key={portal.id}
+                  onClick={() => scrollToPortalCard(portal.id)}
+                  className={`flex-1 py-2 px-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+                    isActive 
+                      ? 'bg-white text-slate-900 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {React.cloneElement(portal.icon, { className: "w-3.5 h-3.5 shrink-0" })}
+                  <span className="truncate">{portal.title.split(' ')[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div 
+            ref={portalCarouselRef}
+            onScroll={onPortalCarouselScroll}
+            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 px-3 -mx-3 md:mx-0 md:px-0 scroll-smooth"
+          >
             {portals.map((portal) => {
               const isEmerald = portal.accent === 'emerald';
               const isAmber = portal.accent === 'amber';
               
-              const topBorder = isEmerald 
-                ? 'border-t-4 border-t-emerald-600' 
+              const cardBorder = isEmerald 
+                ? 'bg-gradient-to-b from-emerald-50/70 via-white to-white border-emerald-200/80 hover:border-emerald-400 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.12)]'
                 : isAmber 
-                ? 'border-t-4 border-t-amber-500' 
-                : 'border-t-4 border-t-blue-600';
+                ? 'bg-gradient-to-b from-amber-50/70 via-white to-white border-amber-200/80 hover:border-amber-400 shadow-[0_4px_24px_-4px_rgba(245,158,11,0.12)]'
+                : 'bg-gradient-to-b from-blue-50/70 via-white to-white border-blue-200/80 hover:border-blue-400 shadow-[0_4px_24px_-4px_rgba(59,130,246,0.12)]';
 
-              const iconContainer = isEmerald
-                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+              const iconBg = isEmerald
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
                 : isAmber
-                ? 'bg-amber-50 text-amber-600 border border-amber-100'
-                : 'bg-blue-50 text-blue-600 border border-blue-100';
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
+                : 'bg-blue-600 text-white shadow-md shadow-blue-600/30';
 
               const accentColor = isEmerald ? 'text-emerald-700' : isAmber ? 'text-amber-700' : 'text-blue-700';
 
               const btnClass = isEmerald
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25'
                 : isAmber
-                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
+                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-600/25'
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/25';
 
               return (
                 <div 
                   key={portal.id}
+                  id={`portal-card-${portal.id}`}
                   onClick={() => {
                     setRedirecting(portal.id);
                     setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
                   }}
-                  className={`group relative flex flex-col justify-between bg-white border border-slate-200/90 rounded-xl md:rounded-3xl p-2.5 sm:p-5 md:p-8 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ${topBorder}`}
+                  className={`w-[85vw] max-w-[340px] md:w-auto shrink-0 snap-center group relative flex flex-col justify-between border rounded-3xl p-5 md:p-8 transition-all duration-300 cursor-pointer overflow-hidden ${cardBorder}`}
                 >
                   <div>
-                    <div className="flex justify-between items-center mb-2 md:mb-5">
-                      <div className={`w-7 h-7 sm:w-10 sm:h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl flex items-center justify-center ${iconContainer}`}>
-                        {React.cloneElement(portal.icon, { className: "w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7" })}
+                    <div className="flex justify-between items-center mb-4 md:mb-5">
+                      <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center ${iconBg}`}>
+                        {React.cloneElement(portal.icon, { className: "w-6 h-6 md:w-7 md:h-7 text-white" })}
                       </div>
-                      <span className="text-[7px] sm:text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded md:rounded-md tracking-tight uppercase">
+                      <span className="text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-white/90 border border-slate-200/80 text-slate-700 shadow-xs">
                         {portal.role}
                       </span>
                     </div>
 
-                    <div className="mb-1 md:mb-2">
-                      <h3 className="text-[11px] sm:text-lg md:text-2xl font-black text-slate-900 tracking-tight leading-tight">{portal.title}</h3>
-                      <p className={`font-bold text-[9px] sm:text-xs md:text-sm mt-0.5 ${accentColor}`}>{portal.hindi}</p>
+                    <div className="mb-2">
+                      <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">{portal.title}</h3>
+                      <p className={`font-bold text-xs md:text-sm mt-0.5 ${accentColor}`}>{portal.hindi}</p>
+                    </div>
+
+                    {/* Features list */}
+                    <div className="space-y-1.5 my-3.5 md:my-4">
+                      {portal.features.map((feat, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs md:text-sm font-semibold text-slate-700">
+                          <CheckCircle2 className={`w-4 h-4 shrink-0 ${accentColor}`} />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
                     </div>
                     
-                    <p className="text-slate-600 font-medium text-[8px] sm:text-xs md:text-sm mt-1.5 md:mt-3 leading-snug md:leading-relaxed">{portal.desc}</p>
-                    <p className="text-slate-400 font-semibold text-[7px] sm:text-[11px] md:text-xs mt-1 md:mt-2 leading-snug">{portal.hindiDesc}</p>
+                    <p className="text-slate-600 font-medium text-xs md:text-sm leading-relaxed">{portal.desc}</p>
+                    <p className="text-slate-400 font-semibold text-[11px] md:text-xs mt-1 leading-relaxed">{portal.hindiDesc}</p>
                   </div>
 
-                  <button className={`mt-2.5 md:mt-6 w-full py-1.5 sm:py-2.5 md:py-3.5 rounded-lg md:rounded-xl font-black flex items-center justify-center gap-1 md:justify-between px-1.5 sm:px-3 md:px-6 transition-all duration-200 active:scale-[0.98] ${redirecting === portal.id ? 'bg-slate-800 text-white' : btnClass}`}>
-                    <span className="text-[9px] sm:text-xs md:text-sm truncate">
-                      {redirecting === portal.id ? 'Connecting...' : (
-                        <>
-                          <span className="hidden sm:inline">Go to Portal</span>
-                          <span className="sm:hidden">Open</span>
-                        </>
-                      )}
-                    </span>
+                  <button className={`mt-5 md:mt-6 w-full py-3.5 px-6 rounded-2xl font-black text-xs md:text-sm flex items-center justify-between text-white transition-all shadow-md active:scale-98 ${redirecting === portal.id ? 'bg-slate-800' : btnClass}`}>
+                    <span>{redirecting === portal.id ? 'Connecting...' : 'Go to Portal'}</span>
                     {redirecting === portal.id ? (
-                      <Loader2 className="animate-spin w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 shrink-0" />
+                      <Loader2 className="animate-spin w-4 h-4 shrink-0" />
                     ) : (
-                      <ArrowRight className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
                     )}
                   </button>
                 </div>
