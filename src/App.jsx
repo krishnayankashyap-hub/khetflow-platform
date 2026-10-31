@@ -180,12 +180,12 @@ export default function KhetFlowFullPortfolio() {
       title: 'Farmer Portal',
       hindi: 'किसान पोर्टल (B2B Marketplace)',
       role: 'Agri Producers',
-      desc: 'Sell surplus Grade B & C produce that mandis reject. Access transparent prices, eliminate middleman cuts, and build a credit profile for bank loans.',
-      hindiDesc: 'Grade B & C फसल के लिए मंडी भाव जानें, सीधे व्यापारियों को बेचें और बैंक लोन हेतु KhetScore बनाएं।',
+      desc: 'Sell surplus Grade B & C produce that mandis reject. Access transparent live prices, eliminate middleman cuts, and earn extra income while building KhetScore for bank loans.',
+      hindiDesc: 'Grade B & C फसल के लिए लाइव मंडी भाव जानें, अतिरिक्त आय कमाएं और बैंक लोन हेतु KhetScore बनाएं।',
       features: [
-        'Real-Time Agmarknet Price Discovery',
         'Extra Income from Grade B & C Produce',
-        'Build KhetScore for Bank Credit'
+        'Real-Time Agmarknet Price Discovery',
+        'Build KhetScore for Low-Interest Loans'
       ],
       url: 'https://farmer-portal-yourproject.web.app/',
       accent: 'emerald',
@@ -196,11 +196,11 @@ export default function KhetFlowFullPortfolio() {
       title: 'Business Portal',
       hindi: 'व्यापारी पोर्टल (HORECA Procurement)',
       role: 'Wholesale Buyers',
-      desc: 'Procure high-quality Grade B & C produce directly from farms. Cut raw material food costs by 40-60% with complete price visibility and reliable supply.',
+      desc: 'Procure high-quality Grade B & C produce directly from farms. Cut raw material food costs by 40-60% with complete price visibility and reliable scheduled supply.',
       hindiDesc: 'होटल, रेस्टोरेंट और कैटरर्स के लिए सीधा किसानों से ताज़ा माल। 40-60% सीधी बचत और पारदर्शी दाम।',
       features: [
+        '40-60% Savings on Fresh Produce Bills',
         'Transparent Wholesale Price Discovery',
-        'Save 40-60% on Fresh Produce Bills',
         'Farm-to-Kitchen Direct B2B Supply'
       ],
       url: 'https://business-portal-yourproject.web.app/',
@@ -212,12 +212,12 @@ export default function KhetFlowFullPortfolio() {
       title: 'Logistics Portal',
       hindi: 'लॉजिस्टिक्स पोर्टल (Fleet & Fleet Owners)',
       role: 'Smart Fleet',
-      desc: 'Join our dedicated agricultural transit network. AI load pooling eliminates empty return trips, cuts diesel costs by up to 35%, and unlocks daily direct earnings.',
-      hindiDesc: 'डिलीवरी नेटवर्क से जुड़ें, लोड पूलिंग से खाली फेरे खत्म करें, 35% डीज़ल बचाएं और रोज़ाना पक्का भुगतान पाएं।',
+      desc: 'Join India\'s dedicated agricultural transit network. AI load pooling eliminates empty return trips, cuts diesel costs by up to 35%, and guarantees daily direct-to-bank settlements.',
+      hindiDesc: 'एग्री लॉजिस्टिक्स नेटवर्क से जुड़ें। स्मार्ट लोड पूलिंग से खाली फेरे खत्म करें, 35% डीज़ल खर्च बचाएं और रोज़ाना पक्का बैंक भुगतान पाएं।',
       features: [
         'Dynamic Load & Route Optimization',
-        'Zero Empty Return Trips (Backhaul Cargo)',
-        'Guaranteed Daily Earnings & Instant Settlement'
+        'Transparent Price Discovery & Load Rates',
+        'Zero Empty Returns & Guaranteed Daily Payouts'
       ],
       url: 'https://rider-portal-yourproject.web.app/',
       accent: 'blue',
