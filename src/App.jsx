@@ -392,6 +392,69 @@ export default function KhetFlowFullPortfolio() {
         </section>
         {/* --- END PRICE DISCOVERY SECTION --- */}
 
+        {/* --- DUAL SCROLLING VALIDATION SECTION --- */}
+        <section id="Achievements" className="py-24 bg-white relative overflow-hidden group/marquee">
+          <div className="max-w-7xl mx-auto px-6 mb-12">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-black mb-6 border border-amber-200 shadow-sm">
+                <Trophy size={16} /> Track Record
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter text-slate-900 uppercase">
+                Validated by <span className="text-amber-500 italic">Ecosystems.</span>
+              </h2>
+              <p className="text-slate-500 font-bold text-lg max-w-2xl mx-auto">
+                From securing 1st Prize at national hackathons to pitching in front of industry leaders, Team Astranova is making waves across India.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6 md:gap-10 py-4 w-full">
+            
+            {/* ROW 1: Moving Right to Left */}
+            <div className="flex gap-4 md:gap-8 w-max animate-marquee-left hover:[animation-play-state:paused]">
+              {row1Items.map((item, index) => (
+                <div 
+                  key={`r1-${index}`} 
+                  className={`relative w-[200px] md:w-[260px] shrink-0 bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer hover:z-50 hover:scale-[1.15] hover:rotate-0 hover:translate-y-0 border border-slate-100 ${scatterStyles[index % scatterStyles.length]}`}
+                >
+                  <div className={`w-full bg-slate-100 ${item.heightClass} relative overflow-hidden rounded-lg border border-slate-100`}>
+                    <img src={item.imgPlaceholder} alt={item.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="mt-3 px-1 md:mt-4 md:px-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Medal className="w-3 h-3 text-amber-500" />
+                      <p className="text-amber-500 text-[8px] md:text-[9px] font-black uppercase tracking-widest">{item.subtitle}</p>
+                    </div>
+                    <h3 className="text-slate-900 text-sm md:text-lg font-black tracking-tight leading-snug">{item.title}</h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ROW 2: Moving Left to Right */}
+            <div className="flex gap-4 md:gap-8 w-max animate-marquee-right hover:[animation-play-state:paused] ml-[-50%]">
+              {row2Items.map((item, index) => (
+                <div 
+                  key={`r2-${index}`} 
+                  className={`relative w-[200px] md:w-[260px] shrink-0 bg-white p-2 pb-6 md:p-3 md:pb-8 rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer hover:z-50 hover:scale-[1.15] hover:rotate-0 hover:translate-y-0 border border-slate-100 ${scatterStyles[(index + 3) % scatterStyles.length]}`}
+                >
+                  <div className={`w-full bg-slate-100 ${item.heightClass} relative overflow-hidden rounded-lg border border-slate-100`}>
+                    <img src={item.imgPlaceholder} alt={item.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="mt-3 px-1 md:mt-4 md:px-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Medal className="w-3 h-3 text-amber-500" />
+                      <p className="text-amber-500 text-[8px] md:text-[9px] font-black uppercase tracking-widest">{item.subtitle}</p>
+                    </div>
+                    <h3 className="text-slate-900 text-sm md:text-lg font-black tracking-tight leading-snug">{item.title}</h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </section>
+
        
 {/* --- FOOTER --- */}
        <footer className="bg-slate-50 py-16 px-6 relative border-t border-slate-200 overflow-hidden min-h-[400px] flex flex-col justify-center">
