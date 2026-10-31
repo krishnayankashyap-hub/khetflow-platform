@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sprout, Store, Truck, ArrowRight, Leaf, CheckCircle2, 
   LineChart, Globe, Loader2, Wallet, ShieldCheck, Banknote, Star, CloudRain, Trophy, Medal,
@@ -64,15 +64,65 @@ export default function KhetFlowFullPortfolio() {
   const [isLoading, setIsLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2800);
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('scroll', handleScroll);
+    let minTimeDone = false;
+    let videoReady = false;
+
+    const checkFinished = () => {
+      if (minTimeDone && videoReady) {
+        setIsLoading(false);
+      }
     };
+
+    // Minimum animation duration for brand preloader (2.2s)
+    const minTimer = setTimeout(() => {
+      minTimeDone = true;
+      checkFinished();
+    }, 2200);
+
+    // Fallback maximum timeout (3.5s) to guarantee site always reveals seamlessly
+    const maxTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3500);
+
+    const vid = videoRef.current;
+    if (vid) {
+      const handleCanPlay = () => {
+        videoReady = true;
+        vid.play().catch(() => {});
+        checkFinished();
+      };
+
+      if (vid.readyState >= 3) {
+        videoReady = true;
+        vid.play().catch(() => {});
+        checkFinished();
+      } else {
+        vid.addEventListener('canplay', handleCanPlay, { once: true });
+        vid.addEventListener('loadeddata', handleCanPlay, { once: true });
+      }
+
+      const handleScroll = () => setScrolled(window.scrollY > 50);
+      window.addEventListener('scroll', handleScroll);
+
+      return () => {
+        clearTimeout(minTimer);
+        clearTimeout(maxTimer);
+        vid.removeEventListener('canplay', handleCanPlay);
+        vid.removeEventListener('loadeddata', handleCanPlay);
+        window.removeEventListener('scroll', handleScroll);
+      };
+    } else {
+      const handleScroll = () => setScrolled(window.scrollY > 50);
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        clearTimeout(minTimer);
+        clearTimeout(maxTimer);
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
   }, []);
 
   const stats = [
@@ -253,18 +303,20 @@ export default function KhetFlowFullPortfolio() {
         {/* --- HERO SECTION --- */}
         <section className="pt-32 pb-12 px-6 bg-slate-50 relative overflow-hidden">
           
-          {/* --- BACKGROUND VIDEO --- */}
+          {/* --- BACKGROUND VIDEO (PRELOADED & BUFFERED) --- */}
           <video 
+            ref={videoRef}
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="absolute inset-0 w-full h-full object-cover opacity-20 md:opacity-25 z-0 pointer-events-none"
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover opacity-35 md:opacity-40 z-0 pointer-events-none transition-opacity duration-700"
           >
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
-          {/* Subtle wash so text is crisp while background video remains clearly visible */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/15 to-transparent pointer-events-none z-0" />
+          {/* Subtle top wash so headline text is razor-sharp, fading to 0% so stat cards are 100% transparent */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/25 to-transparent pointer-events-none z-0" />
 
           <div className="max-w-7xl mx-auto relative z-10 text-center animate-fade-in-up">
             <div className="mb-4 md:mb-6 inline-block">
@@ -297,21 +349,22 @@ export default function KhetFlowFullPortfolio() {
               {stats.map((stat, i) => (
                 <div 
                   key={i} 
-                  className="bg-white/40 backdrop-blur-md p-3.5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/60 flex flex-col items-center hover:bg-white/60 hover:shadow-xl transition-all duration-300"
+                  style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+                  className="bg-white/10 hover:bg-white/20 p-3.5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.06)] border border-white/50 flex flex-col items-center transition-all duration-300"
                 >
-                  <div className={`mb-1.5 md:mb-4 p-2 md:p-3 rounded-xl backdrop-blur-sm ${
-                    i === 0 ? 'bg-rose-500/15 text-rose-700 border border-rose-200/40' :
-                    i === 1 ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-200/40' :
-                    i === 2 ? 'bg-amber-500/15 text-amber-700 border border-amber-200/40' :
-                    'bg-blue-500/15 text-blue-700 border border-blue-200/40'
+                  <div className={`mb-1.5 md:mb-4 p-2 md:p-3 rounded-xl ${
+                    i === 0 ? 'bg-rose-500/20 text-rose-800 border border-rose-300/40' :
+                    i === 1 ? 'bg-emerald-500/20 text-emerald-800 border border-emerald-300/40' :
+                    i === 2 ? 'bg-amber-500/20 text-amber-800 border border-amber-300/40' :
+                    'bg-blue-500/20 text-blue-800 border border-blue-300/40'
                   }`}>
                     {i === 1 ? <CloudRain className="w-4 h-4 md:w-6 md:h-6" /> : <LineChart className="w-4 h-4 md:w-6 md:h-6" />}
                   </div>
-                  <h3 className={`text-lg md:text-4xl font-black tracking-tight ${stat.color}`}>
+                  <h3 className={`text-lg md:text-4xl font-black tracking-tight ${stat.color} drop-shadow-sm`}>
                     {stat.prefix}{stat.value}{stat.suffix}
                   </h3>
-                  <p className="text-[9px] md:text-[10px] font-black text-slate-800 uppercase mt-1 text-center tracking-wide">{stat.label}</p>
-                  <p className="text-[8px] md:text-[9px] font-semibold text-slate-600 text-center">{stat.hindi}</p>
+                  <p className="text-[9px] md:text-[10px] font-black text-slate-900 uppercase mt-1 text-center tracking-wide">{stat.label}</p>
+                  <p className="text-[8px] md:text-[9px] font-bold text-slate-700 text-center">{stat.hindi}</p>
                 </div>
               ))}
             </div>
