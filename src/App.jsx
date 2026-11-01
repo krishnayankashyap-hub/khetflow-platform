@@ -384,11 +384,11 @@ export default function KhetFlowFullPortfolio() {
 
           <div className="max-w-7xl mx-auto relative z-10 text-center animate-fade-in-up">
             <div className="mb-4 md:mb-6 inline-block">
-              <p className="text-xs sm:text-sm md:text-base font-extrabold tracking-normal text-slate-800">
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-extrabold tracking-normal text-slate-800">
                 Transforming{' '}
                 <span className="text-emerald-700 font-black relative inline-block mx-0.5">
                   ₹90,000+ Crore
-                  <svg className="absolute -bottom-1.5 left-0 w-full h-2 text-emerald-500" viewBox="0 0 100 8" preserveAspectRatio="none">
+                  <svg className="absolute -bottom-1.5 left-0 w-full h-2 md:h-2.5 text-emerald-500" viewBox="0 0 100 8" preserveAspectRatio="none">
                     <path d="M0 4 Q 25 1 50 4 T 100 4" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
                   </svg>
                 </span>{' '}
@@ -414,7 +414,7 @@ export default function KhetFlowFullPortfolio() {
                 <div 
                   key={i} 
                   style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
-                  className="bg-white/10 hover:bg-white/20 p-3.5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.06)] border border-white/50 flex flex-col items-center transition-all duration-300"
+                  className="bg-white/10 hover:bg-white/20 p-3.5 md:p-8 rounded-2xl md:rounded-[2.5rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.06)] border border-white/50 flex flex-col items-center hover:scale-[1.02] transition-all duration-300"
                 >
                   <div className={`mb-1.5 md:mb-4 p-2 md:p-3 rounded-xl ${
                     i === 0 ? 'bg-rose-500/20 text-rose-800 border border-rose-300/40' :
