@@ -484,7 +484,7 @@ export default function KhetFlowFullPortfolio() {
           <div 
             ref={portalCarouselRef}
             onScroll={onPortalCarouselScroll}
-            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4 px-3 -mx-3 md:mx-0 md:px-0 scroll-smooth touch-pan-x"
+            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto snap-x snap-proximity scrollbar-none pb-4 px-3 -mx-3 md:mx-0 md:px-0 scroll-smooth overscroll-x-contain"
           >
             {portals.map((portal) => {
               const isEmerald = portal.accent === 'emerald';
@@ -508,11 +508,7 @@ export default function KhetFlowFullPortfolio() {
                 <div 
                   key={portal.id}
                   id={`portal-card-${portal.id}`}
-                  onClick={() => {
-                    setRedirecting(portal.id);
-                    setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
-                  }}
-                  className={`w-[85vw] max-w-[340px] md:w-auto shrink-0 snap-center group relative flex flex-col justify-between bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-slate-300 rounded-2xl md:rounded-3xl p-5 md:p-8 transition-all duration-300 cursor-pointer overflow-hidden ${topBorder}`}
+                  className={`w-[85vw] max-w-[340px] md:w-auto shrink-0 snap-center group relative flex flex-col justify-between bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-slate-300 rounded-2xl md:rounded-3xl p-5 md:p-8 transition-all duration-300 overflow-hidden ${topBorder}`}
                 >
                   <div>
                     <div className="flex justify-between items-center mb-4 md:mb-5">
@@ -545,7 +541,13 @@ export default function KhetFlowFullPortfolio() {
                     <p className="text-slate-400 font-medium text-[11px] md:text-xs mt-1.5 leading-relaxed">{portal.hindiDesc}</p>
                   </div>
 
-                  <button className="mt-5 md:mt-6 w-full py-3.5 px-5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-between text-white transition-all bg-slate-900 hover:bg-slate-800 shadow-sm active:scale-[0.99] group/btn">
+                  <button 
+                    onClick={() => {
+                      setRedirecting(portal.id);
+                      setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
+                    }}
+                    className="mt-5 md:mt-6 w-full py-3.5 px-5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-between text-white transition-all bg-slate-900 hover:bg-slate-800 shadow-sm active:scale-[0.99] group/btn cursor-pointer"
+                  >
                     <span>{redirecting === portal.id ? 'Connecting to Portal...' : 'Go to Portal'}</span>
                     {redirecting === portal.id ? (
                       <Loader2 className="animate-spin w-4 h-4 shrink-0" />
