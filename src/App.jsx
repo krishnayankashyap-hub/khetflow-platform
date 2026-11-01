@@ -442,8 +442,8 @@ export default function KhetFlowFullPortfolio() {
               <p className="text-slate-400 font-bold text-xs md:text-sm">अपना पोर्टल चुनें और शुरुआत करें</p>
           </div>
 
-          {/* Interactive Portal Switcher with Slide Buttons */}
-          <div className="flex items-center justify-center gap-2 mb-6 max-w-md mx-auto">
+          {/* Interactive Portal Switcher with Slide Buttons (Mobile Only) */}
+          <div className="flex md:hidden items-center justify-center gap-2 mb-6 max-w-md mx-auto">
             <button
               onClick={handlePrevPortal}
               aria-label="Previous Portal"
@@ -481,10 +481,11 @@ export default function KhetFlowFullPortfolio() {
             </button>
           </div>
 
+          {/* Mobile Snap Carousel */}
           <div 
             ref={portalCarouselRef}
             onScroll={onPortalCarouselScroll}
-            className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto snap-x snap-proximity scrollbar-none pb-4 px-3 -mx-3 md:mx-0 md:px-0 scroll-smooth overscroll-x-contain"
+            className="flex md:hidden gap-4 overflow-x-auto snap-x snap-proximity scrollbar-none pb-4 px-3 -mx-3 scroll-smooth overscroll-x-contain"
           >
             {portals.map((portal) => {
               const isEmerald = portal.accent === 'emerald';
@@ -508,37 +509,37 @@ export default function KhetFlowFullPortfolio() {
                 <div 
                   key={portal.id}
                   id={`portal-card-${portal.id}`}
-                  className={`w-[85vw] max-w-[340px] md:w-auto shrink-0 snap-center group relative flex flex-col justify-between bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-slate-300 rounded-2xl md:rounded-3xl p-5 md:p-8 transition-all duration-300 overflow-hidden ${topBorder}`}
+                  className={`w-[85vw] max-w-[340px] shrink-0 snap-center group relative flex flex-col justify-between bg-white border border-slate-200 shadow-sm rounded-2xl p-5 transition-all duration-300 overflow-hidden ${topBorder}`}
                 >
                   <div>
-                    <div className="flex justify-between items-center mb-4 md:mb-5">
-                      <div className={`w-11 h-11 md:w-12 md:h-12 rounded-xl flex items-center justify-center ${iconBox}`}>
-                        {React.cloneElement(portal.icon, { className: "w-5 h-5 md:w-6 md:h-6" })}
+                    <div className="flex justify-between items-center mb-4">
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${iconBox}`}>
+                        {React.cloneElement(portal.icon, { className: "w-5 h-5" })}
                       </div>
-                      <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-50 text-slate-700 border border-slate-200">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md bg-slate-50 text-slate-700 border border-slate-200">
                         {portal.role}
                       </span>
                     </div>
 
                     <div className="mb-2">
-                      <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-snug">{portal.title}</h3>
-                      <p className={`font-semibold text-xs md:text-sm mt-0.5 ${accentColor}`}>{portal.hindi}</p>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight leading-snug">{portal.title}</h3>
+                      <p className={`font-semibold text-xs mt-0.5 ${accentColor}`}>{portal.hindi}</p>
                     </div>
 
-                    <div className="h-px bg-slate-100 my-3.5 md:my-4" />
+                    <div className="h-px bg-slate-100 my-3.5" />
 
                     {/* Features list */}
                     <div className="space-y-2 mb-4">
                       {portal.features.map((feat, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5 text-xs md:text-sm font-semibold text-slate-800 leading-snug">
+                        <div key={idx} className="flex items-start gap-2.5 text-xs font-semibold text-slate-800 leading-snug">
                           <CheckCircle2 className={`w-4 h-4 shrink-0 mt-0.5 ${accentColor}`} />
                           <span>{feat}</span>
                         </div>
                       ))}
                     </div>
                     
-                    <p className="text-slate-600 text-xs md:text-sm leading-relaxed">{portal.desc}</p>
-                    <p className="text-slate-400 font-medium text-[11px] md:text-xs mt-1.5 leading-relaxed">{portal.hindiDesc}</p>
+                    <p className="text-slate-600 text-xs leading-relaxed">{portal.desc}</p>
+                    <p className="text-slate-400 font-medium text-[11px] mt-1.5 leading-relaxed">{portal.hindiDesc}</p>
                   </div>
 
                   <button 
@@ -546,7 +547,7 @@ export default function KhetFlowFullPortfolio() {
                       setRedirecting(portal.id);
                       setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
                     }}
-                    className="mt-5 md:mt-6 w-full py-3.5 px-5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-between text-white transition-all bg-slate-900 hover:bg-slate-800 shadow-sm active:scale-[0.99] group/btn cursor-pointer"
+                    className="mt-5 w-full py-3.5 px-5 rounded-xl font-bold text-xs flex items-center justify-between text-white transition-all bg-slate-900 active:scale-[0.99] group/btn cursor-pointer shadow-sm"
                   >
                     <span>{redirecting === portal.id ? 'Connecting to Portal...' : 'Go to Portal'}</span>
                     {redirecting === portal.id ? (
@@ -558,6 +559,50 @@ export default function KhetFlowFullPortfolio() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Desktop Grid (Spacious Original Design) */}
+          <div className="hidden md:grid md:grid-cols-3 gap-8">
+            {portals.map((portal) => (
+              <div 
+                key={portal.id}
+                onClick={() => {
+                  setRedirecting(portal.id);
+                  setTimeout(() => { window.open(portal.url, '_blank'); setRedirecting(null); }, 1500);
+                }}
+                className={`group relative flex flex-col justify-between bg-white border border-slate-100 border-b-8 ${
+                  portal.accent === 'emerald' ? 'border-b-emerald-500' : portal.accent === 'amber' ? 'border-b-amber-500' : 'border-b-blue-500'
+                } p-10 rounded-[3rem] shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden hover:-translate-y-1`}
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-6 relative z-10">
+                    <div className={`w-16 h-16 rounded-3xl flex items-center justify-center border border-slate-100 shadow-sm ${
+                      portal.accent === 'emerald' ? 'bg-emerald-50 text-emerald-600' : portal.accent === 'amber' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      {React.cloneElement(portal.icon, { className: "w-8 h-8" })}
+                    </div>
+                    <div className="flex gap-0.5">
+                       {[1,2,3].map(i => <Star key={i} size={8} className="text-amber-400 fill-amber-400" />)}
+                    </div>
+                  </div>
+
+                  <h3 className="text-3xl font-black text-slate-900 mb-1 relative z-10">{portal.title}</h3>
+                  <p className={`font-black text-sm mb-4 italic ${
+                    portal.accent === 'emerald' ? 'text-emerald-600' : portal.accent === 'amber' ? 'text-amber-600' : 'text-blue-600'
+                  }`}>{portal.hindi}</p>
+                  
+                  <p className="text-slate-500 font-medium text-sm mb-6 leading-relaxed">{portal.desc}</p>
+                  <p className="text-slate-800 font-bold text-xs mb-6">{portal.hindiDesc}</p>
+                </div>
+
+                <button className={`mt-auto w-full py-5 rounded-2xl font-black flex items-center justify-between px-8 transition-all duration-300 shadow-md ${
+                  redirecting === portal.id ? 'bg-slate-800 text-white' : 'bg-slate-900 text-white hover:scale-105'
+                }`}>
+                  <span className="text-base">{redirecting === portal.id ? 'Connecting...' : 'Go to Portal'}</span>
+                  {redirecting === portal.id ? <Loader2 className="animate-spin w-4 h-4" /> : <ArrowRight className="w-5 h-5" />}
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Mobile Slide Indicator Dots */}
