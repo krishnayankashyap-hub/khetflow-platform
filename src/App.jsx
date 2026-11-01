@@ -735,59 +735,63 @@ export default function KhetFlowFullPortfolio() {
 
        
 {/* --- FOOTER --- */}
-       <footer className="bg-slate-50 py-16 px-6 relative border-t border-slate-200 overflow-hidden min-h-[400px] flex flex-col justify-center">
-         {/* Background Watermark */}
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] font-black text-slate-200/50 select-none pointer-events-none uppercase tracking-tighter">
-           KhetFlow
-         </div>
-         
-         <div className="max-w-7xl mx-auto relative z-10 flex flex-col xl:flex-row justify-between items-start gap-12 text-left w-full">
-           
-           {/* Team Members Grid Section */}
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8 w-full xl:w-[75%]">
-             {teamMembers.map((member, index) => (
-               <div key={index} className="flex flex-col">
-                 <p className="text-slate-500 text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-1">
-                   {member.role}
-                 </p>
-                 <h2 className="text-lg md:text-xl font-black text-slate-900 opacity-90 tracking-tight">
-                   {member.name}
-                 </h2>
-               </div>
-             ))}
-           </div>
-           
-           {/* Right Info Section */}
-           <div className="flex flex-col items-start xl:items-end gap-2 w-full xl:w-auto shrink-0 pt-4 xl:pt-0 border-t border-slate-200 xl:border-none">
-             <p className="text-slate-900 font-black text-sm md:text-base uppercase tracking-widest bg-white border border-slate-200 px-3 py-1 rounded-md shadow-sm">
-               Under Team Astranova
-             </p>
-             <div className="flex gap-4 text-slate-400 text-[8px] font-black uppercase tracking-widest mt-2">
-               <span>B2B Platform</span>
-               <span>Fintech</span>
-               <span>Agri</span>
-             </div>
-             
-             <a 
-               href="mailto:khetflow8@gmail.com" 
-               className="mt-2 text-emerald-600 hover:text-emerald-700 font-bold text-[10px] md:text-xs tracking-widest transition-colors lowercase flex items-center gap-1"
-             >
-               khetflow8@gmail.com
-             </a>
+        <footer className="bg-slate-50 py-8 md:py-16 px-4 md:px-6 relative border-t border-slate-200 overflow-hidden flex flex-col justify-center">
+          {/* Background Watermark */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] font-black text-slate-200/40 select-none pointer-events-none uppercase tracking-tighter">
+            KhetFlow
+          </div>
+          
+          <div className="max-w-7xl mx-auto relative z-10 flex flex-col xl:flex-row justify-between items-start gap-5 md:gap-12 text-left w-full">
+            
+            {/* Team Members Grid Section - 2 cols on mobile for compact 1-view layout */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-8 gap-y-3 md:gap-y-6 w-full xl:w-[75%]">
+              {teamMembers.map((member, index) => (
+                <div key={index} className="flex flex-col">
+                  <p className="text-slate-500 text-[8px] md:text-[9px] font-black uppercase tracking-wider mb-0.5 line-clamp-1">
+                    {member.role}
+                  </p>
+                  <h2 className="text-xs sm:text-sm md:text-xl font-black text-slate-900 opacity-90 tracking-tight leading-snug">
+                    {member.name}
+                  </h2>
+                </div>
+              ))}
+            </div>
+            
+            {/* Right Info Section */}
+            <div className="flex flex-col sm:flex-row xl:flex-col justify-between items-start xl:items-end gap-3 md:gap-4 w-full xl:w-auto shrink-0 pt-3 md:pt-4 border-t border-slate-200/80 xl:border-none">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-slate-900 font-black text-xs md:text-sm uppercase tracking-wider bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-xs">
+                  Under Team Astranova
+                </p>
+                <div className="flex gap-2 text-slate-400 text-[8px] md:text-[9px] font-black uppercase tracking-widest">
+                  <span>B2B Platform</span>
+                  <span>•</span>
+                  <span>Fintech</span>
+                  <span>•</span>
+                  <span>Agri</span>
+                </div>
+              </div>
+              
+              <a 
+                href="mailto:khetflow8@gmail.com" 
+                className="text-emerald-700 hover:text-emerald-800 font-bold text-xs md:text-sm tracking-wide transition-colors lowercase flex items-center gap-1"
+              >
+                khetflow8@gmail.com
+              </a>
 
-             {/* Mentor Section Moved Here */}
-             <div className="flex flex-col items-start xl:items-end mt-8">
-               <p className="text-slate-500 text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] mb-1 text-left xl:text-right">
-                 Sensei and Mentor
-               </p>
-               <h2 className="text-lg md:text-xl font-black text-slate-900 opacity-90 tracking-tight text-left xl:text-right">
-                 Dr. Adarsh Pradhan <span className="text-sm md:text-base font-semibold text-slate-500 tracking-normal ml-1">(Assistant Professor CSE)</span>
-               </h2>
-             </div>
-           </div>
-           
-         </div>
-       </footer>
+              {/* Mentor Section */}
+              <div className="flex flex-col items-start xl:items-end mt-2 md:mt-4">
+                <p className="text-slate-500 text-[8px] md:text-[9px] font-black uppercase tracking-wider mb-0.5 text-left xl:text-right">
+                  Sensei and Mentor
+                </p>
+                <h2 className="text-xs sm:text-sm md:text-xl font-black text-slate-900 opacity-90 tracking-tight text-left xl:text-right">
+                  Dr. Adarsh Pradhan <span className="text-[10px] md:text-sm font-semibold text-slate-500 tracking-normal ml-0.5 md:ml-1">(Assistant Professor CSE)</span>
+                </h2>
+              </div>
+            </div>
+            
+          </div>
+        </footer>
 
        <style dangerouslySetInnerHTML={{__html: `
          @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
