@@ -669,19 +669,19 @@ function TransportPooling({ user, riderData }) {
         const initMap = () => {
             if (mapRef.current || !mapContainerRef.current) return;
             
-            // Initialize Leaflet Map over Bengaluru (to match screenshot)
-            const map = window.L.map(mapContainerRef.current, { zoomControl: false }).setView([12.99, 77.61], 13);
+            // Initialize Leaflet Map over Guwahati, Assam
+            const map = window.L.map(mapContainerRef.current, { zoomControl: false }).setView([26.1500, 91.7400], 12);
             
             window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
             }).addTo(map);
 
-            // Mock coordinates for stops
+            // Mock coordinates for stops across Kamrup & Guwahati
             const route = [
-                [12.9716, 77.5946], // Stop 1
-                [12.9850, 77.6050], // Stop 2
-                [13.0050, 77.6200], // Stop 3
-                [13.0200, 77.6400]  // Stop 4
+                [26.1158, 91.7086], // Stop 1: Azara Collection Point
+                [26.1402, 91.7305], // Stop 2: Jalukbari Transit Hub
+                [26.1620, 91.7510], // Stop 3: Bharalumukh Cross-dock
+                [26.1850, 91.7700]  // Stop 4: Guwahati Wholesale Market
             ];
 
             // Draw Route
@@ -760,7 +760,7 @@ function TransportPooling({ user, riderData }) {
                             <div style={{ width: '24px', height: '24px', background: '#0F766E', borderRadius: '50%', color: 'white', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>1</div>
                             <div>
                                 <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '700', color: '#0F172A' }}>Rohit Sharma</h4>
-                                <p style={{ margin: '0.25rem 0', fontSize: '0.85rem', color: '#64748B' }}>221B, 7th Cross, Koramangala, Bengaluru</p>
+                                <p style={{ margin: '0.25rem 0', fontSize: '0.85rem', color: '#64748B' }}>KhetFlow Hub, VIP Road, Borjhar, Azara, Guwahati, Assam</p>
                                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: '600', color: '#0F172A' }}>0.8 km away</p>
                             </div>
                         </div>
@@ -1466,6 +1466,33 @@ function HandshakeModal({ user, riderData, onClose, onConfirm }) {
               <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', fontWeight: '600', color: '#0F172A' }}>Scan Handoff QR</h3>
               <p style={{ color: '#64748B', marginBottom: '1.5rem', fontSize: '0.85rem' }}>Scan the QR code from the farmer or first-mile rider</p>
               <div id="handshake-qr-reader" style={{ borderRadius: '8px', margin: '0 auto', maxWidth: '300px', overflow: 'hidden' }}></div>
+              <button
+                type="button"
+                onClick={() => {
+                  setScannedData({
+                    farmName: 'Azara Valley Farm',
+                    farmerId: 'farmer_demo_1',
+                    name: 'Organic Grade B Tomatoes',
+                    quantity: 50
+                  });
+                }}
+                style={{
+                  marginTop: '1.25rem',
+                  background: '#F0FDF4',
+                  border: '1px solid #86EFAC',
+                  color: '#15803D',
+                  padding: '0.6rem 1.25rem',
+                  borderRadius: '0.5rem',
+                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}
+              >
+                ⚡ One-Click Demo Custody Transfer
+              </button>
             </div>
           ) : (
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '1.25rem', marginBottom: '1rem' }}>
@@ -1530,16 +1557,16 @@ function LiveTrackingModal({ order, onClose }) {
     const initMap = () => {
         if (mapRef.current || !mapContainerRef.current) return;
         
-        // Initialize Leaflet Map over Bengaluru
-        const map = window.L.map(mapContainerRef.current, { zoomControl: false }).setView([12.99, 77.61], 13);
+        // Initialize Leaflet Map over Guwahati, Assam
+        const map = window.L.map(mapContainerRef.current, { zoomControl: false }).setView([26.1500, 91.7400], 12);
         
         window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
         }).addTo(map);
 
         const route = [
-            [12.9716, 77.5946], // Origin
-            [13.0200, 77.6400]  // Destination
+            [26.1158, 91.7086], // Origin: Azara Farmer Collective, Kamrup
+            [26.1850, 91.7700]  // Destination: Guwahati Wholesale Market / Dispur
         ];
 
         window.L.polyline(route, { color: '#0F766E', weight: 4, dashArray: '10, 10' }).addTo(map);
@@ -1745,7 +1772,7 @@ function RiderLanding() {
 function AuthPage({ isLogin }) {
   const navigate = useNavigate();
   const { t } = useContext(LanguageContext);
-  const [form, setForm] = useState({ email: '', password: '', riderName: '', phone: '', vehicleType: 'bike', vehicleNumber: '' });
+  const [form, setForm] = useState({ identifier: '', password: '', riderName: '', phone: '', vehicleType: 'bike', vehicleNumber: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -1753,13 +1780,32 @@ function AuthPage({ isLogin }) {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    let emailToUse = (form.identifier || '').trim();
+    if (/^\d{10}$/.test(emailToUse)) {
+      emailToUse = `${emailToUse}@rider.khetflow.com`;
+    }
+
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, form.email, form.password);
+        await signInWithEmailAndPassword(auth, emailToUse, form.password);
         navigate('/dashboard');
       } else {
-        const userCred = await createUserWithEmailAndPassword(auth, form.email, form.password);
-        await setDoc(doc(db, 'riders', userCred.user.uid), { ...form, userType: 'rider', totalDeliveries: 0, totalEarnings: 0, rating: 5.0, createdAt: serverTimestamp(), isOnline: true });
+        const userCred = await createUserWithEmailAndPassword(auth, emailToUse, form.password);
+        const riderPhone = /^\d{10}$/.test(form.identifier) ? form.identifier : (form.phone || '');
+        await setDoc(doc(db, 'riders', userCred.user.uid), {
+          riderName: form.riderName || 'KhetFlow Logistics Partner',
+          email: emailToUse,
+          phone: riderPhone,
+          vehicleType: form.vehicleType || 'bike',
+          vehicleNumber: form.vehicleNumber || '',
+          userType: 'rider',
+          totalDeliveries: 0,
+          totalEarnings: 0,
+          rating: 5.0,
+          createdAt: serverTimestamp(),
+          isOnline: true
+        });
         navigate('/dashboard');
       }
     } catch (err) { setError(err.message.replace('Firebase: ', '').replace('auth/', '')); } finally { setLoading(false); }
@@ -1785,11 +1831,11 @@ function AuthPage({ isLogin }) {
           {!isLogin && (
             <>
               <input className="form-input" type="text" placeholder={t('full_name')} value={form.riderName} onChange={(e) => setForm({...form, riderName: e.target.value})} required />
-              <input className="form-input" type="tel" placeholder={t('phone')} value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} required />
+              <input className="form-input" type="tel" placeholder={t('phone')} value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} />
             </>
           )}
-          <input className="form-input" type="email" placeholder="Email Address" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} required />
-          <input className="form-input" type="password" placeholder="Password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} required />
+          <input className="form-input" type="text" placeholder="Email Address or 10-digit Phone" value={form.identifier} onChange={(e) => setForm({...form, identifier: e.target.value})} required />
+          <input className="form-input" type="password" placeholder="Password (min 6 characters)" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} required />
           {!isLogin && (
             <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <select className="form-input" value={form.vehicleType} onChange={(e) => setForm({...form, vehicleType: e.target.value})} style={{ cursor: 'pointer' }}>
@@ -2022,7 +2068,7 @@ function Dashboard() {
       <div className="dashboard-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem', marginBottom: '2rem', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ width: '48px', height: '48px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F766E' }}>
-            {riderData?.vehicleType === 'truck' ? <Truck /> : <Truck />}
+            {riderData?.vehicleType === 'truck' ? <Truck size={24} /> : riderData?.vehicleType === 'van' || riderData?.vehicleType === 'tempo' ? <Box size={24} /> : <Zap size={24} />}
           </div>
           <div>
             <h1 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.2rem', color: '#0F172A' }}>{riderData?.riderName || 'Rider'}</h1>
@@ -2077,11 +2123,11 @@ function Dashboard() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', position: 'relative', zIndex: 10, overflowX: 'auto', paddingBottom: '0.5rem', scrollbarWidth: 'none' }}>
         {[
-          { key: 'pending', label: t('tab_new') },
-          { key: 'accepted', label: t('tab_farm') },
-          { key: 'picked', label: t('tab_drop') },
-          { key: 'delivered', label: t('tab_done') },
-          { key: 'pooling', label: t('tab_pool') }
+          { key: 'pending', label: t('tab_new'), count: isOnline ? orders.filter(o => o.status === 'pending' && !o.farmerSelfDelivery).length : 0 },
+          { key: 'accepted', label: t('tab_farm'), count: orders.filter(o => o.status === 'accepted' && o.riderId === user?.uid).length },
+          { key: 'picked', label: t('tab_drop'), count: orders.filter(o => o.status === 'picked' && o.riderId === user?.uid).length },
+          { key: 'delivered', label: t('tab_done'), count: orders.filter(o => o.status === 'delivered' && o.riderId === user?.uid).length },
+          { key: 'pooling', label: t('tab_pool'), count: 0 }
         ].map((tab) => (
           <button 
             key={tab.key} 
@@ -2090,10 +2136,23 @@ function Dashboard() {
                background: filter === tab.key ? '#0F172A' : '#FFFFFF', 
                border: filter === tab.key ? '1px solid #0F172A' : '1px solid #E2E8F0', 
                color: filter === tab.key ? '#FFFFFF' : '#475569', 
-               padding: '0.6rem 1.2rem', borderRadius: '50px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' 
+               padding: '0.6rem 1.2rem', borderRadius: '50px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+               display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}
           >
-            {tab.label}
+            <span>{tab.label}</span>
+            {tab.count > 0 && (
+              <span style={{ 
+                fontSize: '0.7rem', 
+                padding: '2px 7px', 
+                borderRadius: '999px', 
+                background: filter === tab.key ? '#0F766E' : '#E2E8F0', 
+                color: filter === tab.key ? '#FFFFFF' : '#0F172A',
+                fontWeight: '700'
+              }}>
+                {tab.count}
+              </span>
+            )}
           </button>
         ))}
       </div>

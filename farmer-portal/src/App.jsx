@@ -395,7 +395,7 @@ function WeatherWidget({ location, isMobileBox }) {
           </div>
           <div className="flex items-center gap-2 text-slate-500 mt-1">
             <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
-            <span className="font-bold text-base">{location || 'Farm Location'}</span>
+            <span className="font-bold text-base">{location || 'Azara, Kamrup, Assam'}</span>
           </div>
         </div>
       </div>

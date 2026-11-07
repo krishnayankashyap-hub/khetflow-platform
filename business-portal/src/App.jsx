@@ -121,10 +121,14 @@ function ThemeProvider({ children }) {
       :root {
         --bg-main: #f8fafc; /* Crisp slate-white */
         --panel-bg: #ffffff;
-        --panel-border: rgba(15, 23, 42, 0.06);
-        --panel-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.08), 0 4px 6px -1px rgba(15, 23, 42, 0.04);
+        --panel-border: #e2e8f0;
+        --panel-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 10px 25px -5px rgba(15, 23, 42, 0.08);
         --input-bg: #ffffff;
         --input-border: #cbd5e1;
+        --glass-bg: #ffffff;
+        --glass-panel: #ffffff;
+        --glass-border: #e2e8f0;
+        --glass-input: #f8fafc;
       }
       
       body { 
@@ -565,7 +569,7 @@ function CombinedHome() {
             KhetFlow <span style={{ color: theme.colors.primary }}>Business</span>
           </h1>
           <p style={{ fontSize: '1.1rem', color: theme.colors.textMuted, marginBottom: '2.5rem', fontWeight: '500', lineHeight: 1.6, maxWidth: '420px' }}>
-            Source perfectly imperfect Grade B & C crops directly from farmers and Vendors. Cheapest! and Zero food waste. Unbeatable margins.
+            Direct farm-to-business sourcing for Grade B & C produce. Procure fresh bulk agricultural lots at up to 60% below mandi rates with guaranteed quality inspection and same-day delivery.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }} className="mobile-hide">
@@ -610,7 +614,7 @@ function CombinedHome() {
             </form>
 
             <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.9rem', color: theme.colors.textMuted }}>
-              {isLogin ? "New to KhetFlow? " : "Already our friend? "}
+              {isLogin ? "New to KhetFlow? " : "Already have an account? "}
               <button onClick={() => { setIsLogin(!isLogin); setErrors({}); }} style={{ background: 'none', border: 'none', color: theme.colors.primary, fontWeight: '700', cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>
                 {isLogin ? 'Create an account' : 'Log in here'}
               </button>
@@ -852,9 +856,12 @@ useEffect(() => {
             </div>
           </div>
           <div className="header-actions" style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'nowrap' }}>
-            <PremiumButton variant={view === 'marketplace' ? 'primary' : 'ghost'} onClick={() => setView('marketplace')} size="sm" icon="">Market</PremiumButton>
-            <PremiumButton variant={view === 'orders' ? 'primary' : 'ghost'} onClick={() => setView('orders')} size="sm" icon="">Orders</PremiumButton>
-            <PremiumButton variant={view === 'mandi' ? 'primary' : 'ghost'} onClick={() => setView('mandi')} size="sm" icon="">Mandi</PremiumButton>
+            <PremiumButton variant={view === 'marketplace' ? 'primary' : 'ghost'} onClick={() => setView('marketplace')} size="sm" icon="">🏪 Market</PremiumButton>
+            <PremiumButton variant={view === 'orders' ? 'primary' : 'ghost'} onClick={() => setView('orders')} size="sm" icon="">📦 Orders</PremiumButton>
+            <PremiumButton variant={view === 'mandi' ? 'primary' : 'ghost'} onClick={() => setView('mandi')} size="sm" icon="">📊 Mandi</PremiumButton>
+            <PremiumButton variant={showCart ? 'primary' : 'ghost'} onClick={() => setShowCart(true)} size="sm" icon="">
+              🛒 Cart {cart.length > 0 ? `(${cart.reduce((a, b) => a + b.cartQuantity, 0)})` : ''}
+            </PremiumButton>
             <div style={{ width: '1px', height: '16px', background: 'var(--glass-border)', margin: '0 0.25rem' }}></div>
             <PremiumButton variant="danger" onClick={async () => { await signOut(auth); navigate('/'); }} size="sm" icon="">Logout</PremiumButton>
           </div>
@@ -864,7 +871,7 @@ useEffect(() => {
           <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
             {/* STATS */}
             <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-              {[{ label: 'Total Spend', value: '₹2,841', icon: '', color: theme.colors.success }, { label: 'Food Ordered(Kg)', value: '132 kg', icon: '', color: theme.colors.primary }, { label: 'Active Orders', value: orders.filter(o=>o.status!=='delivered').length, icon: '', color: theme.colors.warning }].map((stat, i) => (
+              {[{ label: 'Total Sourced', value: '₹2,841', icon: '💰', color: theme.colors.success }, { label: 'Procured Volume', value: '132 kg', icon: '⚖️', color: theme.colors.primary }, { label: 'Active Dispatches', value: orders.filter(o=>o.status!=='delivered').length, icon: '🚚', color: theme.colors.warning }].map((stat, i) => (
                 <div key={i} className="glass-panel stat-card" style={{ borderRadius: '1.25rem', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', transition: 'transform 0.3s' }}>
                   <div className="icon-wrap" style={{ fontSize: '1.5rem', background: 'var(--glass-input)', padding: '0.75rem', borderRadius: '1rem', display: 'flex', alignItems: 'center' }}>{stat.icon}</div>
                   <div><div className="label" style={{ fontSize: '0.8rem', color: theme.colors.textMuted, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>{stat.label}</div><div className="val" style={{ fontSize: '1.5rem', fontWeight: '800', color: stat.color || theme.colors.text, lineHeight: 1, marginTop: '4px' }}>{stat.value}</div></div>
@@ -875,9 +882,9 @@ useEffect(() => {
             {/* MAIN MARKET CONTENT - Zero huge gaps */}
             <div className="glass-panel marketplace-panel" style={{ borderRadius: '1.5rem', padding: '1.25rem' }}>
               <div style={{ marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: theme.colors.textMuted, marginBottom: '0.75rem', fontWeight: '800' }}>Explore Finds</h3>
+                <h3 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: theme.colors.textMuted, marginBottom: '0.75rem', fontWeight: '800' }}>Explore Farm Produce</h3>
                 <div className="category-scroll" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {[ { id: 'all', icon: '', label: 'All' }, { id: 'vegetables', icon: '', label: 'Veggies' }, { id: 'fruits', icon: '', label: 'Fruits' }, { id: 'millets', icon: '', label: 'Millets' }].map(cat => (
+                  {[ { id: 'all', icon: '🌐', label: 'All Crops' }, { id: 'vegetables', icon: '🥬', label: 'Vegetables' }, { id: 'fruits', icon: '🍎', label: 'Fruits' }, { id: 'millets', icon: '🌾', label: 'Millets' }].map(cat => (
                     <button key={cat.id} onClick={() => setActiveCategory(cat.id)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '1.5rem', background: activeCategory === cat.id ? `${theme.colors.success}20` : 'var(--glass-input)', border: `2px solid ${activeCategory === cat.id ? theme.colors.success : 'transparent'}`, color: activeCategory === cat.id ? theme.colors.success : theme.colors.text, fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s ease', fontSize: '0.85rem' }}>
                       <span style={{ display: 'flex', alignItems: 'center', lineHeight: 1 }}>{cat.icon}</span> 
                       <span style={{ lineHeight: 1 }}>{cat.label}</span>
@@ -924,7 +931,7 @@ useEffect(() => {
                           <div><div className="mandi-price" style={{ fontSize: '0.65rem', color: theme.colors.textMuted, textDecoration: 'line-through', fontWeight: '600' }}>Mandi: ₹{mandiPrice}</div><div className="kf-price" style={{ fontSize: '1.1rem', fontWeight: '800', color: theme.colors.text, lineHeight: 1, marginTop: '2px' }}>₹{listing.price}<span style={{fontSize:'0.75rem', fontWeight:'600', color: theme.colors.textMuted}}>/kg</span></div></div>
                           <div className="product-save" style={{ background: `linear-gradient(135deg, ${theme.colors.success}, ${theme.colors.successDark})`, color: 'white', padding: '0.3rem 0.5rem', borderRadius: '0.4rem', fontSize: '0.7rem', fontWeight: '800', display: 'flex', alignItems: 'center', lineHeight: 1 }}>SAVE {savePercent}%</div>
                         </div>
-                        <div style={{ marginTop: 'auto' }}><PremiumButton fullWidth size="sm" icon="" onClick={() => addToCart(listing)}>Add</PremiumButton></div>
+                        <div style={{ marginTop: 'auto' }}><PremiumButton fullWidth size="sm" onClick={() => addToCart(listing)}>🛒 Add to Order</PremiumButton></div>
                       </div>
                     </div>
                   );
@@ -938,11 +945,11 @@ useEffect(() => {
           <div className="glass-panel" style={{ borderRadius: '1.5rem', padding: '1.25rem', animation: 'fadeIn 0.3s ease-out' }}>
             <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: theme.colors.text, margin: '0 0 0.25rem 0' }}>Market Rates </h2>
-                <p style={{ color: theme.colors.textMuted, margin: 0, fontSize: '0.85rem', fontWeight: '500' }}>Compare Grade A vs Grade B savings.</p>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: theme.colors.text, margin: '0 0 0.25rem 0' }}>Mandi Market Benchmark Rates 📊</h2>
+                <p style={{ color: theme.colors.textMuted, margin: 0, fontSize: '0.85rem', fontWeight: '500' }}>Direct price comparison: Mandi Grade A vs KhetFlow Grade B & C wholesale lots.</p>
               </div>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
-                <span style={{ position: 'absolute', left: '0.75rem', color: theme.colors.textMuted, display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}></span>
+                <span style={{ position: 'absolute', left: '0.75rem', color: theme.colors.textMuted, display: 'flex', alignItems: 'center', fontSize: '0.9rem' }}>🔍</span>
                 <input type="text" placeholder="Search crop..." style={{ padding: '0.6rem 0.75rem 0.6rem 2.25rem', width: '100%', borderRadius: '0.75rem', border: '1px solid var(--glass-border)', background: 'var(--glass-input)', color: theme.colors.text, outline: 'none', fontSize: '0.9rem' }} />
               </div>
             </div>
@@ -1076,13 +1083,13 @@ useEffect(() => {
           <div style={{ padding: '1.25rem', borderTop: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.4)' }}>
             
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ fontSize: '0.65rem', color: theme.colors.textMuted, fontWeight: '800', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>HOW TO PAY? </div>
+              <div style={{ fontSize: '0.65rem', color: theme.colors.textMuted, fontWeight: '800', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>PAYMENT METHOD</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                 <button type="button" onClick={() => setPaymentMethod('online')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.6rem', borderRadius: '0.75rem', border: `2px solid ${paymentMethod === 'online' ? theme.colors.primary : 'var(--glass-border)'}`, background: paymentMethod === 'online' ? `${theme.colors.primary}15` : 'var(--glass-input)', color: theme.colors.text, fontWeight: '700', cursor: 'pointer', fontSize: '0.85rem' }}>
-                   Pay Now
+                   💳 Escrow Pay
                 </button>
                 <button type="button" onClick={() => setPaymentMethod('cod')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.6rem', borderRadius: '0.75rem', border: `2px solid ${paymentMethod === 'cod' ? theme.colors.success : 'var(--glass-border)'}`, background: paymentMethod === 'cod' ? `${theme.colors.success}15` : 'var(--glass-input)', color: theme.colors.text, fontWeight: '700', cursor: 'pointer', fontSize: '0.85rem' }}>
-                   COD
+                   💵 Pay on Delivery
                 </button>
               </div>
             </div>
