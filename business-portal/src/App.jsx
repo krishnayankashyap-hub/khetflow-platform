@@ -20,6 +20,89 @@ const MARKET_RATES = [
   { crop: 'Ginger', mandiA: 120, kfB: 80, kfC: 50, trend: 'Up', status: 85 },
 ];
 
+const SAMPLE_MARKET_LISTINGS = [
+  {
+    id: 'sample-onion-b',
+    name: 'Fresh Red Onion (Mild Shape Variance)',
+    farmerId: 'demo-farmer-01',
+    farmerName: 'Ramesh Saikia',
+    farmName: 'Azara Organic Harvest',
+    farmLocation: 'Kamrup, Assam',
+    price: 18,
+    originalPrice: 28,
+    quantity: 120,
+    grade: 'B',
+    icon: '🧅',
+    image: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=400&q=80',
+    description: 'Crisp, flavorful organic onions with slight size variations. High culinary yield for kitchens.',
+    status: 'active'
+  },
+  {
+    id: 'sample-tomato-b',
+    name: 'Farm Fresh Tomatoes (Grade B)',
+    farmerId: 'demo-farmer-01',
+    farmerName: 'Ramesh Saikia',
+    farmName: 'Azara Organic Harvest',
+    farmLocation: 'Kamrup, Assam',
+    price: 18,
+    originalPrice: 28,
+    quantity: 85,
+    grade: 'B',
+    icon: '🍅',
+    image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&q=80',
+    description: 'Juicy, sun-ripened tomatoes, perfect for puree, curries, and sauces.',
+    status: 'active'
+  },
+  {
+    id: 'sample-potato-b',
+    name: 'Assam Valley Potatoes (Grade B)',
+    farmerId: 'demo-farmer-02',
+    farmerName: 'Biren Kalita',
+    farmName: 'Brahmaputra Agro Farms',
+    farmLocation: 'Barpeta, Assam',
+    price: 16,
+    originalPrice: 24,
+    quantity: 200,
+    grade: 'B',
+    icon: '🥔',
+    image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&q=80',
+    description: 'Nutritious mountain potatoes with minor surface marks. Firm and starchy.',
+    status: 'active'
+  },
+  {
+    id: 'sample-carrot-c',
+    name: 'Country Carrots (Grade C Forked)',
+    farmerId: 'demo-farmer-02',
+    farmerName: 'Biren Kalita',
+    farmName: 'Brahmaputra Agro Farms',
+    farmLocation: 'Barpeta, Assam',
+    price: 22,
+    originalPrice: 40,
+    quantity: 60,
+    grade: 'C',
+    icon: '🥕',
+    image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400&q=80',
+    description: 'Naturally forked and bent organic carrots. Sweet taste, ideal for juicing and dicing.',
+    status: 'active'
+  },
+  {
+    id: 'sample-ginger-b',
+    name: 'High-Aroma Ginger (Grade B)',
+    farmerId: 'demo-farmer-03',
+    farmerName: 'Deepak Nath',
+    farmName: 'Shillong Foothills Farm',
+    farmLocation: 'Ri-Bhoi, Meghalaya',
+    price: 75,
+    originalPrice: 110,
+    quantity: 45,
+    grade: 'B',
+    icon: '🫚',
+    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=400&q=80',
+    description: 'Potent hill ginger roots with smaller rhizomes. Intense natural heat.',
+    status: 'active'
+  }
+];
+
 // ==================== THEME SYSTEM ====================
 
 const ThemeContext = createContext();
@@ -356,8 +439,33 @@ function DeliveryVerificationModal({ order, onClose, onVerify }) {
         </div>
         {!scannedData ? (
           <div style={{ background: 'var(--glass-input)', borderRadius: '1.5rem', padding: '1rem', textAlign: 'center', border: `2px dashed ${theme.colors.primary}60` }}>
-            <p style={{ color: theme.colors.text, marginBottom: '1rem', fontSize: '0.95rem', fontWeight: '600' }}>Point camera at cute package QR Code</p>
+            <p style={{ color: theme.colors.text, marginBottom: '1rem', fontSize: '0.95rem', fontWeight: '600' }}>Point camera at shipment QR Code</p>
             <div id="delivery-qr-reader" style={{ borderRadius: '1rem', overflow: 'hidden' }}></div>
+            <button
+              type="button"
+              onClick={() => {
+                const item = order?.items?.[0] || {};
+                setScannedData({
+                  name: item.name || 'Verified Produce',
+                  farmName: order?.farmName || item.farmName || 'Azara Valley Farm',
+                  grade: item.grade || 'B'
+                });
+                toast.success('Shipment verified for demo!');
+              }}
+              style={{
+                marginTop: '1rem',
+                background: `${theme.colors.primary}15`,
+                border: `1px solid ${theme.colors.primary}50`,
+                color: theme.colors.primaryDark,
+                padding: '0.5rem 1rem',
+                borderRadius: '0.75rem',
+                fontWeight: '700',
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
+            >
+              ⚡ One-Click Demo Verification
+            </button>
           </div>
         ) : (
           <div style={{ background: `${theme.colors.success}15`, border: `2px solid ${theme.colors.success}40`, borderRadius: '1.5rem', padding: '1.5rem', marginBottom: '1.5rem', backdropFilter: 'blur(5px)' }}>
@@ -588,8 +696,16 @@ useEffect(() => {
   const fetchListings = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'listings'));
-      setListings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    } catch (error) { toast.error('Error loading cute products'); }
+      const dbListings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (dbListings.length > 0) {
+        setListings(dbListings);
+      } else {
+        setListings(SAMPLE_MARKET_LISTINGS);
+      }
+    } catch (error) { 
+      console.warn('Using standard inventory fallback:', error);
+      setListings(SAMPLE_MARKET_LISTINGS);
+    }
   };
 
   const fetchOrders = async (uid) => {
@@ -620,10 +736,10 @@ useEffect(() => {
     const existing = cart.find(item => item.id === listing.id);
     if (existing) {
       setCart(cart.map(item => item.id === listing.id ? { ...item, cartQuantity: Math.min(item.cartQuantity + 1, item.quantity) } : item));
-      toast.success(`✨ Cart delightfully updated`);
+      toast.success(`Cart updated`);
     } else {
       setCart([...cart, { ...listing, cartQuantity: 1 }]);
-      toast.success(`✨ Dropped into your cart!`);
+      toast.success(`Added to procurement cart`);
     }
   };
 
@@ -639,17 +755,35 @@ useEffect(() => {
   const finalizeOrder = async () => {
     setOrdering(true);
     try {
+      const totalWeight = cart.reduce((sum, item) => sum + (Number(item.cartQuantity) || Number(item.quantity) || 1), 0);
+      const farmName = cart[0]?.farmName || 'Azara Valley Farm';
+      const farmAddress = cart[0]?.farmLocation || 'Azara, Kamrup, Assam';
+
       await addDoc(collection(db, 'orders'), {
-        businessId: user.uid, businessName: businessData?.businessName || 'Unknown',
-        items: cart, subTotal, deliveryFee, totalAmount: finalTotal,
-        paymentMethod, paymentStatus: paymentMethod === 'online' ? 'paid' : 'pending',
-        deliveryAddress: deliveryForm.address, phone: deliveryForm.phone,
-        status: 'pending', createdAt: serverTimestamp()
+        businessId: user.uid,
+        businessName: businessData?.businessName || user.displayName || 'Enterprise Buyer',
+        items: cart,
+        totalItems: totalWeight,
+        farmName: farmName,
+        farmAddress: farmAddress,
+        subTotal,
+        deliveryFee,
+        totalAmount: finalTotal,
+        paymentMethod,
+        paymentStatus: paymentMethod === 'online' ? 'paid' : 'pending',
+        deliveryAddress: deliveryForm.address || 'Guwahati Commercial Market, Assam',
+        phone: deliveryForm.phone || '9876543210',
+        status: 'pending',
+        readyForPickup: false,
+        createdAt: serverTimestamp()
       });
       setCart([]); setShowCart(false); setShowSuccess(true);
       setTimeout(() => { setShowSuccess(false); setView('orders'); }, 3000);
       await fetchOrders(user.uid);
-    } catch (error) { toast.error('Error placing order'); } 
+    } catch (error) { 
+      console.error('Order error:', error);
+      toast.error('Error placing order'); 
+    } 
     finally { setOrdering(false); }
   };
 
@@ -682,7 +816,7 @@ useEffect(() => {
             <div style={{ width: '60px', height: '60px', background: `${theme.colors.primary}15`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: `2px solid ${theme.colors.primary}40` }}>
                <div style={{ width: '30px', height: '30px', border: `3px solid ${theme.colors.primary}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
             </div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: '0 0 0.5rem 0', color: theme.colors.text }}>Secure Magic </h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '800', margin: '0 0 0.5rem 0', color: theme.colors.text }}>Secure Escrow Payment 🔒</h2>
             <p style={{ color: theme.colors.textMuted, fontSize: '0.85rem', margin: '0 0 1rem 0' }}>
               Safely sending <strong style={{color: theme.colors.text}}>₹{finalTotal}</strong> to Escrow.
             </p>
@@ -772,15 +906,16 @@ useEffect(() => {
               {/* Product Grid Mobile */}
               <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
                 {filteredListings.length === 0 ? (
-                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 1rem', color: theme.colors.textMuted, background: 'var(--glass-input)', borderRadius: '1rem', border: `2px dashed ${theme.colors.primary}40`, fontWeight: '600', fontSize: '0.9rem' }}>No cute items found here. 🥺</div>
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 1rem', color: theme.colors.textMuted, background: 'var(--glass-input)', borderRadius: '1rem', border: `2px dashed ${theme.colors.primary}40`, fontWeight: '600', fontSize: '0.9rem' }}>No imperfect produce currently listed in this category.</div>
                 ) : filteredListings.map(listing => {
-                  const mandiPrice = Math.round(listing.price * 1.5);
-                  const savePercent = Math.round((1 - (listing.price / mandiPrice)) * 100);
+                  const itemPrice = Number(listing.price) || 0;
+                  const mandiPrice = Math.round(itemPrice > 0 ? itemPrice * 1.5 : 25);
+                  const savePercent = mandiPrice > 0 ? Math.max(0, Math.min(90, Math.round((1 - (itemPrice / mandiPrice)) * 100))) : 33;
                   return (
                     <div key={listing.id} className="glass-panel product-card" style={{ borderRadius: '1.25rem', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid var(--glass-border)' }}>
                       <div className="product-img" style={{ position: 'relative', height: '130px', background: 'var(--glass-input)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', borderRadius: '0.75rem', marginBottom: '0.75rem' }}>
                         <div style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'var(--glass-bg)', backdropFilter: 'blur(10px)', color: theme.colors.warning, padding: '0.2rem 0.5rem', borderRadius: '0.5rem', fontSize: '0.7rem', fontWeight: '800', border: '1px solid var(--glass-border)', zIndex: 2 }}>GRADE {listing.grade}</div>
-                        {listing.image && listing.image.startsWith('data:') ? <img src={listing.image} alt="" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius: '0.75rem'}} /> : <span style={{display:'flex', alignItems:'center'}}>{listing.icon || ''}</span>}
+                        {listing.image && (listing.image.startsWith('data:') || listing.image.startsWith('http') || listing.image.startsWith('/')) ? <img src={listing.image} alt="" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius: '0.75rem'}} /> : <span style={{display:'flex', alignItems:'center'}}>{listing.icon || '🌾'}</span>}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                         <h3 className="product-title" style={{ margin: '0 0 0.2rem 0', fontSize: '1.1rem', color: theme.colors.text, fontWeight: '800' }}>{listing.name}</h3>
@@ -890,7 +1025,7 @@ useEffect(() => {
 
                   <div style={{ borderTop: '1px dashed var(--glass-border)', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                       <span style={{ fontSize: '0.65rem', color: theme.colors.textMuted, display: 'block', marginBottom: '2px', fontWeight: '800' }}>Total Magic</span>
+                       <span style={{ fontSize: '0.65rem', color: theme.colors.textMuted, display: 'block', marginBottom: '2px', fontWeight: '800' }}>Order Total</span>
                        <div style={{ fontWeight: '800', fontSize: '1.1rem', color: theme.colors.success, lineHeight: 1 }}>₹{order.totalAmount}</div>
                     </div>
                     {isPicked && !order.deliveryVerified && <PremiumButton size="sm" icon="📸" onClick={() => { setSelectedOrder(order); setShowVerificationModal(true); }}>Verify</PremiumButton>}
@@ -909,7 +1044,7 @@ useEffect(() => {
           
           <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.4)' }}>
             <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', color: theme.colors.text }}>
-              Cute Cart  
+              Procurement Cart  
               <span style={{fontSize:'0.75rem', color:theme.colors.primary, fontWeight:'700', background: `${theme.colors.primary}20`, padding: '0.2rem 0.5rem', borderRadius: '0.75rem'}}>{cart.length} Items</span>
             </h2>
             <button onClick={() => setShowCart(false)} style={{ background: 'var(--glass-input)', border: '1px solid var(--glass-border)', borderRadius: '50%', width: '32px', height: '32px', fontSize: '1rem', cursor: 'pointer', color: theme.colors.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
@@ -919,7 +1054,7 @@ useEffect(() => {
             {cart.map(item => (
               <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', background: 'var(--glass-input)', padding: '0.75rem', borderRadius: '1rem', border: '1px solid var(--glass-border)' }}>
                 <div style={{ width: '50px', height: '50px', background: 'var(--glass-bg)', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', border: '1px solid var(--glass-border)' }}>
-                   {item.image && item.image.startsWith('data:') ? <img src={item.image} alt="" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'0.75rem'}} /> : <span>{item.icon || '🌾'}</span>}
+                   {item.image && (item.image.startsWith('data:') || item.image.startsWith('http') || item.image.startsWith('/')) ? <img src={item.image} alt="" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'0.75rem'}} /> : <span>{item.icon || '🌾'}</span>}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: '800', fontSize: '0.9rem', color: theme.colors.text }}>{item.name}</div>
@@ -962,7 +1097,7 @@ useEffect(() => {
                 <PremiumInput placeholder="Phone" value={deliveryForm.phone} onChange={e=>setDeliveryForm({...deliveryForm, phone: e.target.value})} icon="" required style={{ padding: '0.6rem 0.75rem 0.6rem 2.25rem', fontSize: '0.85rem' }} />
               </div>
               <PremiumButton type="submit" variant={paymentMethod === 'cod' ? 'success' : 'primary'} fullWidth loading={ordering} icon={paymentMethod === 'cod' ? "" : ""} style={{ padding: '0.85rem', fontSize: '1rem' }}>
-                {paymentMethod === 'cod' ? 'Place COD Order' : 'Pay & Order Magic'}
+                {paymentMethod === 'cod' ? 'Place COD Order' : 'Authorize Escrow & Place Order'}
               </PremiumButton>
             </form>
           </div>

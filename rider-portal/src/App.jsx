@@ -548,7 +548,7 @@ function RiderHomeMap({ isOnline }) {
 
   // Update map view & marker when location or online status changes without re-initializing
   useEffect(() => {
-    if (mapRef.current && markerRef.current) {
+    if (mapRef.current && markerRef.current && window.L) {
         mapRef.current.setView(location, 14);
         const userIcon = window.L.divIcon({
             html: `<div style="background: ${isOnline ? '#10B981' : '#94A3B8'}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 4px ${isOnline ? 'rgba(16,185,129,0.3)' : 'rgba(148,163,184,0.3)'};"></div>`,
@@ -1104,6 +1104,16 @@ function DeliveryPaymentModal({ order, onClose, onConfirm }) {
               <span style={{ color: '#475569', fontWeight: '500', fontSize: '0.9rem' }}>{paymentPhoto ? 'Proof Captured' : t('upload_proof')}</span>
               <input type="file" accept="image/*" capture="environment" onChange={handlePhotoCapture} style={{ display: 'none' }} />
             </label>
+            {!paymentPhoto && (
+              <button
+                type="button"
+                onClick={() => setPaymentPhoto('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150"><rect fill="%2316a34a" width="300" height="150"/><text fill="white" x="150" y="80" text-anchor="middle" font-size="16" font-family="sans-serif" font-weight="bold">UPI PAYMENT RECEIVED: ₹' + (order.totalAmount || 0) + '</text></svg>')}
+                className="btn-secondary"
+                style={{ marginTop: '0.75rem', width: '100%', padding: '0.5rem', fontSize: '0.8rem', borderColor: '#16A34A', color: '#16A34A', borderRadius: '8px' }}
+              >
+                ⚡ Attach Verified Demo Payment Proof
+              </button>
+            )}
             {paymentPhoto && <img src={paymentPhoto} alt="Proof" style={{ width: '100%', height: '150px', objectFit: 'cover', marginTop: '1rem', borderRadius: '8px' }} />}
           </div>
         ) : (
@@ -1252,6 +1262,28 @@ function VerificationModal({ order, onClose, onVerify, riderData }) {
               <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', fontWeight: '600', color: '#0F172A' }}>Step 1: Scan Farm QR</h3>
               <p style={{ color: '#64748B', marginBottom: '1.5rem', fontSize: '0.85rem' }}>Point your camera at the crate's QR code</p>
               <div id="qr-reader" style={{ borderRadius: '8px', margin: '0 auto', maxWidth: '300px', overflow: 'hidden' }}></div>
+              <button
+                type="button"
+                onClick={() => {
+                  const firstItem = order?.items?.[0] || {};
+                  setScannedData({
+                    id: firstItem.id || order.id,
+                    name: firstItem.name || 'Organic Farm Produce',
+                    farmName: order.farmName || firstItem.farmName || 'Azara Valley Farm',
+                    grade: firstItem.grade || 'B',
+                    quantity: firstItem.cartQuantity || firstItem.quantity || order.totalItems || 20
+                  });
+                  setChecklist({
+                    freshness: true, packaging: true, quantity: true, noticeable_damage: true,
+                    temperature_check: true, color_check: true, no_pests: true, labeling_correct: true
+                  });
+                  setPhotos(['data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%2316a34a" width="100" height="100"/><text fill="white" x="50" y="55" text-anchor="middle" font-size="12">Verified Cargo</text></svg>']);
+                }}
+                className="btn-secondary"
+                style={{ marginTop: '1rem', padding: '0.5rem 1rem', fontSize: '0.85rem', borderColor: '#16A34A', color: '#16A34A', borderRadius: '8px' }}
+              >
+                ⚡ One-Click Demo Verification
+              </button>
             </div>
           ) : (
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '1.25rem', marginBottom: '2rem' }}>
@@ -2087,75 +2119,82 @@ function Dashboard() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {filteredOrders.map((order) => (
-                  <div key={order.id} className="dashboard-card" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: order.status === 'pending' ? '#F59E0B' : order.status === 'accepted' ? '#3B82F6' : order.status === 'picked' ? '#8B5CF6' : '#10B981' }}></div>
-                    
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', paddingLeft: '0.5rem' }}>
-                      <span style={{ background: '#F8FAFC', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600', color: '#64748B', border: '1px solid #E2E8F0' }}>Ref: #{order.id.substring(0, 8)}</span>
-                      <span style={{ color: order.status === 'pending' ? '#D97706' : order.status === 'accepted' ? '#2563EB' : order.status === 'picked' ? '#7C3AED' : '#059669', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {order.status === 'pending' && t('status_waiting')}
-                        {order.status === 'accepted' && t('status_go_farm')}
-                        {order.status === 'picked' && t('status_on_way')}
-                        {order.status === 'delivered' && t('status_completed')}
-                      </span>
-                    </div>
+                {filteredOrders.map((order) => {
+                  const farmName = order.farmName || order.items?.[0]?.farmName || 'Azara Valley Farm';
+                  const farmAddress = order.farmAddress || order.items?.[0]?.farmLocation || 'Azara, Kamrup, Assam';
+                  const deliveryAddress = order.deliveryAddress || 'Guwahati Commercial Market, Assam';
+                  const totalWeight = order.totalItems || order.items?.reduce((sum, item) => sum + (Number(item.cartQuantity) || Number(item.quantity) || 1), 0) || 15;
 
-                    {/* Locations Timeline */}
-                    <div style={{ paddingLeft: '0.5rem', position: 'relative', marginBottom: '1.5rem' }}>
-                        <div style={{ position: 'absolute', left: '0.8rem', top: '10px', bottom: '25px', width: '2px', borderLeft: '2px solid #E2E8F0', zIndex: 0 }}></div>
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', position: 'relative', zIndex: 1 }}>
-                            <div style={{ width: '10px', height: '10px', background: '#3B82F6', borderRadius: '50%', marginTop: '6px', border: '2px solid white', boxShadow: '0 0 0 1px #3B82F6' }}></div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-                                  <div><p style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: '600', marginBottom: '2px', letterSpacing: '0.05em' }}>ORIGIN</p><p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0F172A', margin: 0 }}>{order.farmName || 'Green Valley Farms'}</p><p style={{ fontSize: '0.85rem', color: '#475569', margin: '0.1rem 0 0 0' }}>{order.farmAddress || 'Sector 4, Nashik Road'}</p></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '1rem', position: 'relative', zIndex: 1 }}>
-                            <div style={{ width: '10px', height: '10px', background: '#10B981', borderRadius: '50%', marginTop: '6px', border: '2px solid white', boxShadow: '0 0 0 1px #10B981' }}></div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-                                  <div><p style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: '600', marginBottom: '2px', letterSpacing: '0.05em' }}>DESTINATION</p><p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0F172A', margin: 0 }}>{order.businessName || 'Fresh Mart'}</p><p style={{ fontSize: '0.85rem', color: '#475569', margin: '0.1rem 0 0 0' }}>{order.deliveryAddress}</p></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                  return (
+                    <div key={order.id} className="dashboard-card" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: order.status === 'pending' ? '#F59E0B' : order.status === 'accepted' ? '#3B82F6' : order.status === 'picked' ? '#8B5CF6' : '#10B981' }}></div>
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', paddingLeft: '0.5rem' }}>
+                        <span style={{ background: '#F8FAFC', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600', color: '#64748B', border: '1px solid #E2E8F0' }}>Ref: #{order.id.substring(0, 8)}</span>
+                        <span style={{ color: order.status === 'pending' ? '#D97706' : order.status === 'accepted' ? '#2563EB' : order.status === 'picked' ? '#7C3AED' : '#059669', fontWeight: '700', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {order.status === 'pending' && t('status_waiting')}
+                          {order.status === 'accepted' && t('status_go_farm')}
+                          {order.status === 'picked' && t('status_on_way')}
+                          {order.status === 'delivered' && t('status_completed')}
+                        </span>
+                      </div>
 
-                    <div style={{ display: 'flex', gap: '0.75rem', paddingLeft: '0.5rem', marginBottom: '1.5rem' }}>
-                      <div style={{ background: '#F1F5F9', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', color: '#334155', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Package size={14}/> {order.totalItems} kg</div>
-                      <div style={{ background: '#F1F5F9', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', color: '#334155', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.2rem' }}><IndianRupee size={14}/> {order.paymentMethod === 'cod' ? 'Cash Collect' : 'Pre-Paid'}</div>
-                    </div>
+                      {/* Locations Timeline */}
+                      <div style={{ paddingLeft: '0.5rem', position: 'relative', marginBottom: '1.5rem' }}>
+                          <div style={{ position: 'absolute', left: '0.8rem', top: '10px', bottom: '25px', width: '2px', borderLeft: '2px solid #E2E8F0', zIndex: 0 }}></div>
+                          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', position: 'relative', zIndex: 1 }}>
+                              <div style={{ width: '10px', height: '10px', background: '#3B82F6', borderRadius: '50%', marginTop: '6px', border: '2px solid white', boxShadow: '0 0 0 1px #3B82F6' }}></div>
+                              <div style={{ flex: 1 }}>
+                                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                                    <div><p style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: '600', marginBottom: '2px', letterSpacing: '0.05em' }}>ORIGIN</p><p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0F172A', margin: 0 }}>{farmName}</p><p style={{ fontSize: '0.85rem', color: '#475569', margin: '0.1rem 0 0 0' }}>{farmAddress}</p></div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '1rem', position: 'relative', zIndex: 1 }}>
+                              <div style={{ width: '10px', height: '10px', background: '#10B981', borderRadius: '50%', marginTop: '6px', border: '2px solid white', boxShadow: '0 0 0 1px #10B981' }}></div>
+                              <div style={{ flex: 1 }}>
+                                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                                    <div><p style={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: '600', marginBottom: '2px', letterSpacing: '0.05em' }}>DESTINATION</p><p style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0F172A', margin: 0 }}>{order.businessName || 'Fresh Mart'}</p><p style={{ fontSize: '0.85rem', color: '#475569', margin: '0.1rem 0 0 0' }}>{deliveryAddress}</p></div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
 
-                    {/* NEW NAVIGATION BUTTONS */}
-                    {(order.status === 'accepted' || order.status === 'picked') && (
-                        <div className="responsive-btn-container" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', marginLeft: '0.5rem' }}>
-                            <button 
-                                onClick={() => setTrackingOrder(order)}
-                                className="btn-secondary responsive-btn"
-                                style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }}
-                            >
-                                <Map size={16} /> Internal Tracker
-                            </button>
-                            <button 
-                                onClick={() => openDirections(order.farmAddress || 'Nashik', order.deliveryAddress)}
-                                className="btn-secondary responsive-btn"
-                                style={{ flex: 1, borderColor: '#3B82F6', color: '#3B82F6', padding: '0.6rem', fontSize: '0.85rem' }}
-                            >
-                                <MapPin size={16} /> Google Maps
-                            </button>
-                        </div>
-                    )}
+                      <div style={{ display: 'flex', gap: '0.75rem', paddingLeft: '0.5rem', marginBottom: '1.5rem' }}>
+                        <div style={{ background: '#F1F5F9', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', color: '#334155', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.2rem' }}><Package size={14}/> {totalWeight} kg</div>
+                        <div style={{ background: '#F1F5F9', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', color: '#334155', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.2rem' }}><IndianRupee size={14}/> {order.paymentMethod === 'cod' ? 'Cash Collect' : 'Pre-Paid'}</div>
+                      </div>
 
-                    <div className="responsive-btn-container" style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginLeft: '0.5rem', gap: '1rem' }}>
-                      <div><p style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: '600', marginBottom: '2px', letterSpacing: '0.05em' }}>PAYOUT</p><p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#16A34A', margin: 0 }}>₹{Math.floor((order.deliveryFee || 150) * 0.9)}</p></div>
-                      {order.status === 'pending' && <button onClick={() => handleAcceptOrder(order)} className="btn-primary responsive-btn" style={{ padding: '0.6rem 1.5rem' }}>{t('btn_accept')}</button>}
-                      {order.status === 'accepted' && <button onClick={() => handleVerifyPickup(order)} className="btn-primary responsive-btn" style={{ padding: '0.6rem 1.5rem' }}>{t('btn_verify')}</button>}
-                      {order.status === 'picked' && <button onClick={() => handleDeliverOrder(order)} className="btn-primary responsive-btn" style={{ padding: '0.6rem 1.5rem' }}>{t('btn_finish')}</button>}
-                      {order.status === 'delivered' && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: '600', fontSize: '0.9rem' }}><CheckCircle2 size={18}/> Settled</div>}
+                      {/* NEW NAVIGATION BUTTONS */}
+                      {(order.status === 'accepted' || order.status === 'picked') && (
+                          <div className="responsive-btn-container" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', marginLeft: '0.5rem' }}>
+                              <button 
+                                  onClick={() => setTrackingOrder(order)}
+                                  className="btn-secondary responsive-btn"
+                                  style={{ flex: 1, padding: '0.6rem', fontSize: '0.85rem' }}
+                              >
+                                  <Map size={16} /> Internal Tracker
+                              </button>
+                              <button 
+                                  onClick={() => openDirections(farmAddress, deliveryAddress)}
+                                  className="btn-secondary responsive-btn"
+                                  style={{ flex: 1, borderColor: '#3B82F6', color: '#3B82F6', padding: '0.6rem', fontSize: '0.85rem' }}
+                              >
+                                  <MapPin size={16} /> Google Maps
+                              </button>
+                          </div>
+                      )}
+
+                      <div className="responsive-btn-container" style={{ background: '#F8FAFC', padding: '1rem', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginLeft: '0.5rem', gap: '1rem' }}>
+                        <div><p style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: '600', marginBottom: '2px', letterSpacing: '0.05em' }}>PAYOUT</p><p style={{ fontSize: '1.25rem', fontWeight: '700', color: '#16A34A', margin: 0 }}>₹{Math.floor((order.deliveryFee || 150) * 0.9)}</p></div>
+                        {order.status === 'pending' && <button onClick={() => handleAcceptOrder(order)} className="btn-primary responsive-btn" style={{ padding: '0.6rem 1.5rem' }}>{t('btn_accept')}</button>}
+                        {order.status === 'accepted' && <button onClick={() => handleVerifyPickup(order)} className="btn-primary responsive-btn" style={{ padding: '0.6rem 1.5rem' }}>{t('btn_verify')}</button>}
+                        {order.status === 'picked' && <button onClick={() => handleDeliverOrder(order)} className="btn-primary responsive-btn" style={{ padding: '0.6rem 1.5rem' }}>{t('btn_finish')}</button>}
+                        {order.status === 'delivered' && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#16A34A', fontWeight: '600', fontSize: '0.9rem' }}><CheckCircle2 size={18}/> Settled</div>}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -2167,7 +2206,7 @@ function Dashboard() {
 
 export default function App() {
   const [lang, setLang] = useState('en');
-  const t = (key) => TRANSLATIONS[lang][key] || key;
+  const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>

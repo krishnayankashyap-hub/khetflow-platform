@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "khetflow-38a6e"
+  },
   "targets": {
     "khetflow-38a6e": {
       "hosting": {
