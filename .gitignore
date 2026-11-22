@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Firebase cache
+.firebase/
+
+# Environment files
+.env
+.env.*
+.env.local

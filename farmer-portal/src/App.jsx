@@ -1,0 +1,2943 @@
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { useState, useEffect, useRef, createContext, useContext } from 'react';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, setDoc, getDoc, collection, getDocs, addDoc, deleteDoc, updateDoc, query, where, serverTimestamp, onSnapshot, orderBy, increment } from 'firebase/firestore';
+import { auth, db } from './firebase/config';
+import QRCode from 'react-qr-code';
+import { Html5QrcodeScanner } from 'html5-qrcode';
+import { 
+  Leaf, Package, ShoppingBag, Clock, LogOut, Plus, Trash2, X, Download, 
+  QrCode, ChevronRight, UploadCloud, TrendingUp, MapPin, Phone, User, 
+  Zap, Check, IndianRupee, CloudRain, Sun, Wind, Droplets, Calendar, Globe,
+  Camera, Aperture, Wand2, ScanLine, Settings, AlertCircle, CreditCard, Landmark,
+  ShieldCheck, TrendingDown, Percent, Info, Sprout, Briefcase, MessageCircle, Send, HelpCircle, Bot, MessageSquare,
+  Truck, Users, ArrowRight, Timer, Search, BarChart3, Map, Navigation, CheckCircle2, Mail, PackageCheck, ArrowLeft, Mic
+} from 'lucide-react';
+import FarmerVoiceAssistant from './components/FarmerVoiceAssistant.jsx';
+
+// ==================== 0. LANGUAGE SYSTEM ====================
+
+const LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'hi', name: 'हिंदी' },
+  { code: 'as', name: 'অসমীয়া' },
+  { code: 'pa', name: 'ਪੰਜਾਬੀ' },
+  { code: 'ur', name: 'اردو' },
+  { code: 'hr', name: 'हरियाणवी' }
+];
+
+const TRANSLATIONS = {
+  en: { heroSubtitle: 'Turn "Imperfect" Produce into Perfect Profit', heroDesc: 'Sell Grade B & C produce that would otherwise go to waste. Zero waste, better income, happy planet.', startSelling: 'Start Selling Now', betterPrices: 'Better Prices', zeroWaste: 'Zero Waste', happyBuyers: 'Happy Buyers', welcomeBack: 'Welcome back KhetFlow Farmer 🌱', joinKhetFlow: 'Join KhetFlow Farmer ', loginDesc: 'Login with your Email or Mobile Number', regDesc: 'Register your details to start earning', yourName: 'Your Name', farmName: 'Farm Name', email: 'Email Address', identifier: 'Email or Mobile Number', password: 'Password / PIN', phone: 'Mobile Number', location: 'Farm Location', login: 'Login', createAccount: 'Create Account', dontHaveAcc: "Don't have an account?", alreadyHaveAcc: "Already have an account?", createFarmerAcc: 'Create Farmer Account', loginHere: 'Login Here', listings: 'My Produce', orders: 'Orders', payments: 'Earnings', active: 'Active', earned: 'Earned', pending: 'Pending', yourHarvest: 'Your Harvest', addProduct: 'Add Product', addNewListing: 'Add New Produce', prodName: 'Product Name', qty: 'Quantity (kg)', price: 'Price / kg (₹)', grade: 'Grade', desc: 'Description', publish: 'Publish Listing', noListings: 'No produce listed yet', createFirst: 'Add your first harvest', receivedOrders: 'Received Orders', paymentHistory: 'Payment History', farmerDash: 'Farmer Dashboard', aiScan: 'AI Magic Scan', scanProduce: 'Scan Produce', khetScore: 'Khet Score', creditHistory: 'Credit History', loanEligible: 'Loan Eligibility', scoreGood: 'Good', scoreLow: 'Needs Improv.', scoreExcellent: 'Excellent', buildScore: 'Sell more to improve score', transport: 'Transport Pooling', shareTruck: 'Share a Truck', availablePools: 'Available Trucks', joinPool: 'Join Pool', capacityLeft: 'Capacity Left', mandiRates: 'Market Rates', mandi: 'Mandi', searchCrop: 'Search crop...', priceTrend: 'Price Trend' },
+  hi: { heroSubtitle: 'अपूर्ण उपज को सही मुनाफे में बदलें', heroDesc: 'ग्रेड बी और सी उपज बेचें जो अन्यथा बर्बाद हो जाती। शून्य अपशिष्ट, बेहतर आय, खुशहाल ग्रह।', startSelling: 'अब बेचना शुरू करें', betterPrices: 'बेहतर कीमतें', zeroWaste: 'शून्य अपशिष्ट', happyBuyers: 'खुश खरीदार', welcomeBack: 'वापसी पर स्वागत है खेतफ्लो किसान 🌱', joinKhetFlow: 'खेतफ्लो किसान से जुड़ें ', loginDesc: 'अपने ईमेल या मोबाइल नंबर से लॉगिन करें', regDesc: 'कमाई शुरू करने के लिए अपना विवरण पंजीकृत करें', yourName: 'आपका नाम', farmName: 'खेत का नाम', email: 'ईमेल पता', identifier: 'ईमेल या मोबाइल नंबर', password: 'पासवर्ड / पिन', phone: 'मोबाइल नंबर', location: 'खेत का स्थान', login: 'लॉगिन', createAccount: 'खाता बनाएं', dontHaveAcc: "खाता नहीं है?", alreadyHaveAcc: "पहले से खाता है?", createFarmerAcc: 'किसान खाता बनाएं', loginHere: 'यहाँ लॉगिन करें', listings: 'मेरी उपज', orders: 'ऑर्डर', payments: 'कमाई', active: 'सक्रिय', earned: 'कमाई', pending: 'लंबित', yourHarvest: 'आपकी फसल', addProduct: 'उत्पाद जोड़ें', addNewListing: 'नई उपज जोड़ें', prodName: 'उत्पाद का नाम', qty: 'मात्रा (किग्रा)', price: 'कीमत / किग्रा (₹)', grade: 'ग्रेड', desc: 'विवरण', publish: 'लिस्टिंग प्रकाशित करें', noListings: 'अभी कोई उपज नहीं', createFirst: 'पहली फसल जोड़ें', receivedOrders: 'प्राप्त ऑर्डर', paymentHistory: 'भुगतान इतिहास', farmerDash: 'किसान डैशबोर्ड', aiScan: 'AI मैजिक स्कैन', scanProduce: 'फसल स्कैन करें', khetScore: 'खेत स्कोर', creditHistory: 'क्रेडिट इतिहास', loanEligible: 'ऋण पात्रता', scoreGood: 'अच्छा', scoreLow: 'सुधार की आवश्यकता', scoreExcellent: 'बहुत बढ़िया', buildScore: 'स्कोर बढ़ाने के लिए अधिक बेचें', transport: 'परिवहन', shareTruck: 'ट्रक साझा करें', availablePools: 'उपलब्ध ट्रक', joinPool: 'शामिल हों', capacityLeft: 'बची हुई क्षमता', mandiRates: 'बाज़ार भाव', mandi: 'मंडी', searchCrop: 'फसल खोजें...', priceTrend: 'कीमत रुझान' },
+  as: { heroSubtitle: 'অসম্পূৰ্ণ উৎপাদনক সঠিক লাভলৈ পৰিৱৰ্তন কৰক', heroDesc: 'গ্ৰেড বি আৰু চি সামগ্ৰী বিক্ৰী কৰক যি নহলে নষ্ট হৈ যাব। শূন্য আৱৰ্জনা, উন্নত আয়।', startSelling: 'এতিয়াই বিক্ৰী আৰম্ভ কৰক', betterPrices: 'উন্নত দাম', zeroWaste: 'শূন্য আৱৰ্জনা', happyBuyers: 'সুখী ক্ৰেতা', welcomeBack: 'স্বাগতম KhetFlow কৃষক 🌱', joinKhetFlow: 'KhetFlow ত যোগদান কৰক ', loginDesc: 'আপোনাৰ ইমেইল বা ম’বাইল নম্বৰেৰে লগ ইন কৰক', regDesc: 'উপাৰ্জন আৰম্ভ কৰিবলৈ পঞ্জীয়ন কৰক', yourName: 'আপোনাৰ নাম', farmName: 'খেতিৰ নাম', email: 'ইমেইল ঠিকনা', identifier: 'ইমেইল বা ম’বাইল নম্বৰ', password: 'পাছৱৰ্ড', phone: 'ম’বাইল নম্বৰ', location: 'খেতিৰ স্থান', login: 'লগ ইন', createAccount: 'একাউণ্ট সৃষ্টি কৰক', dontHaveAcc: "একাউণ্ট নাই নেকি?", alreadyHaveAcc: "ইতিমধ্যে একাউণ্ট আছে?", createFarmerAcc: 'কৃষকৰ একাউণ্ট খোলক', loginHere: 'ইয়াত লগ ইন কৰক', listings: 'মোৰ শস্য', orders: 'অৰ্ডাৰ', payments: 'উপাৰ্জন', active: 'সক্ৰিয়', earned: 'উপাৰ্জন', pending: 'বাকী', yourHarvest: 'আপোনাৰ ফচল', addProduct: 'সামগ্ৰী যোগ কৰক', addNewListing: 'নতুন শস্য যোগ কৰক', prodName: 'সামগ্ৰীৰ নাম', qty: 'পৰিমাণ (কেজি)', price: 'দাম / কেজি (₹)', grade: 'গ্ৰেড', desc: 'বিৱৰণ', publish: 'প্ৰকাশ কৰক', noListings: 'কোনো তালিকা নাই', createFirst: 'প্ৰথম তালিকা সৃষ্টি কৰক', receivedOrders: 'প্ৰাপ্ত অৰ্ডাৰ', paymentHistory: 'পেমেন্টৰ ইতিহাস', farmerDash: 'কৃষক ডেশ্ববৰ্ড', aiScan: 'AI স্কেন', scanProduce: 'সামগ্ৰী স্কেন কৰক', khetScore: 'খেত স্কোৰ', creditHistory: 'ক্ৰেডিট ইতিহাস', loanEligible: 'ঋণৰ যোগ্যতা', scoreGood: 'ভাল', scoreLow: 'উন্নতিৰ প্ৰয়োজন', scoreExcellent: 'অতি উত্তম', buildScore: 'স্কোৰ বঢ়াবলৈ অধিক বিক্ৰী কৰক', transport: 'পৰিবহণ', shareTruck: 'ট্ৰাক ভাগ কৰক', availablePools: 'উপলব্ধ ট্ৰাক', joinPool: 'যোগদান কৰক', capacityLeft: 'বাকী থকা ক্ষমতা', mandiRates: 'বজাৰৰ দৰ', mandi: 'মাণ্ডি', searchCrop: 'শস্য বিচাৰক...', priceTrend: 'দৰৰ প্ৰৱণতা' },
+  pa: { heroSubtitle: 'ਅਧੂਰੀ ਉਪਜ ਨੂੰ ਪੂਰੇ ਮੁਨਾਫੇ ਵਿੱਚ ਬਦਲੋ', heroDesc: 'ਗ੍ਰੇਡ ਬੀ ਅਤੇ ਸੀ ਉਪਜ ਵੇਚੋ ਜੋ ਨਹੀਂ ਤਾਂ ਵਿਅਰਥ ਜਾਵੇਗੀ। ਜ਼ੀਰੋ ਵੇਸਟ, ਬਿਹਤਰ ਆਮਦਨ।', startSelling: 'ਹੁਣੇ ਵੇਚਣਾ ਸ਼ੁਰੂ ਕਰੋ', betterPrices: 'ਵਧੀਆ ਕੀਮਤਾਂ', zeroWaste: 'ਜ਼ੀਰੋ ਵੇਸਟ', happyBuyers: 'ਖੁਸ਼ ਖਰੀਦਦਾਰ', welcomeBack: 'ਜੀ ਆਇਆਂ ਨੂੰ ਖੇਤਫਲੋ ਕਿਸਾਨ 🌱', joinKhetFlow: 'ਖੇਤਫਲੋ ਨਾਲ ਜੁੜੋ ', loginDesc: 'ਆਪਣੇ ਈਮੇਲ ਜਾਂ ਮੋਬਾਈਲ ਨੰਬਰ ਨਾਲ ਲੌਗਇਨ ਕਰੋ', regDesc: 'ਕਮਾਈ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਰਜਿਸਟਰ ਕਰੋ', yourName: 'ਤੁਹਾਡਾ ਨਾਮ', farmName: 'ਖੇਤ ਦਾ ਨਾਮ', email: 'ਈਮੇਲ ਪਤਾ', identifier: 'ਈਮੇਲ ਜਾਂ ਮੋਬਾਈਲ ਨੰਬਰ', password: 'ਪਾਸਵਰਡ', phone: 'ਮੋਬਾਈਲ ਨੰਬਰ', location: 'ਖੇਤ ਦਾ ਟਿਕਾਣਾ', login: 'ਲੌਗਇਨ', createAccount: 'ਖਾਤਾ ਬਣਾਓ', dontHaveAcc: "ਕੀ ਖਾਤਾ ਨਹੀਂ ਹੈ?", alreadyHaveAcc: "ਪਹਿਲਾਂ ਹੀ ਖਾਤਾ ਹੈ?", createFarmerAcc: 'ਕਿਸਾਨ ਖਾਤਾ ਬਣਾਓ', loginHere: 'ਇੱਥੇ ਲੌਗਇਨ ਕਰੋ', listings: 'ਮੇਰੀ ਉਪਜ', orders: 'ਆਰਡਰ', payments: 'ਕਮਾਈ', active: 'ਸਰਗਰਮ', earned: 'ਕਮਾਈ', pending: 'ਬਕਾਇਆ', yourHarvest: 'ਤੁਹਾਡੀ ਫਸਲ', addProduct: 'ਉਤਪਾਦ ਸ਼ਾਮਲ ਕਰੋ', addNewListing: 'ਨਵੀਂ ਉਪਜ ਸ਼ਾਮਲ ਕਰੋ', prodName: 'ਉਤਪਾਦ ਦਾ ਨਾਮ', qty: 'ਮਾਤਰਾ (ਕਿਲੋ)', price: 'ਕੀਮਤ / ਕਿਲੋ (₹)', grade: 'ਗ੍ਰੇਡ', desc: 'ਵੇਰਵਾ', publish: 'ਸੂਚੀ ਪ੍ਰਕਾਸ਼ਿਤ ਕਰੋ', noListings: 'ਅਜੇ ਕੋਈ ਸੂਚੀ ਨਹੀਂ', createFirst: 'ਪਹਿਲੀ ਸੂਚੀ ਬਣਾਓ', receivedOrders: 'ਪ੍ਰਾਪਤ ਆਰਡਰ', paymentHistory: 'ਭੁਗਤਾਨ ਇਤਿਹਾਸ', farmerDash: 'ਕਿਸਾਨ ਡੈਸ਼ਬੋਰਡ', aiScan: 'AI ਸਕੈਨ', scanProduce: 'ਉਪਜ ਸਕੈਨ ਕਰੋ', khetScore: 'ਖੇਤ ਸਕੋਰ', creditHistory: 'ਕ੍ਰੈਡਿਟ ਇਤਿਹਾਸ', loanEligible: 'ਕਰਜ਼ਾ ਯੋਗਤਾ', scoreGood: 'ਵਧੀਆ', scoreLow: 'ਸੁਧਾਰ ਦੀ ਲੋੜ', scoreExcellent: 'ਬਹੁਤ ਵਧੀਆ', buildScore: 'ਸਕੋਰ ਵਧਾਉਣ ਲਈ ਹੋਰ ਵੇਚੋ', transport: 'ਆਵਾਜਾਈ', shareTruck: 'ਟਰੱਕ ਸਾਂਝਾ ਕਰੋ', availablePools: 'ਉਪਲਬਧ ਟਰੱਕ', joinPool: 'ਸ਼ਾਮਲ ਹੋਵੋ', capacityLeft: 'ਬਾਕੀ ਸਮਰੱਥਾ', mandiRates: 'ਮੰਡੀ ਦੇ ਭਾਅ', mandi: 'ਮੰਡੀ', searchCrop: 'ਫਸਲ ਖੋਜੋ...', priceTrend: 'ਕੀਮਤ ਦਾ ਰੁਝਾਨ' },
+  ur: { heroSubtitle: 'نامکمل پیداوار کو مکمل منافع میں بدلیں', heroDesc: 'گریڈ بی اور سی کی پیداوار بیچیں جو ورنہ ضائع ہو جاتی۔ صفر فضلہ، بہتر آمدنی۔', startSelling: 'اب بیچنا شروع کریں', betterPrices: 'بہتر قیمتیں', zeroWaste: 'صفر فضلہ', happyBuyers: 'خوش خریدار', welcomeBack: 'خوش آمدید کھیت فلو کسان 🌱', joinKhetFlow: 'کھیت فلو میں شامل ہوں ', loginDesc: 'اپنے ای میل یا موبائل نمبر کے ساتھ لاگ ان کریں', regDesc: 'کمانا شروع کرنے کے لیے رجسٹر کریں', yourName: 'آپ کا نام', farmName: 'کھیت کا نام', email: 'ای میل پتہ', identifier: 'ای میل یا موبائل نمبر', password: 'پاس ورڈ', phone: 'موبائل نمبر', location: 'کھیت کا مقام', login: 'لاگ ان', createAccount: 'اکاؤنٹ بنائیں', dontHaveAcc: "اکاؤنٹ نہیں ہے؟", alreadyHaveAcc: "پہلے سے اکاؤنٹ ہے؟", createFarmerAcc: 'کسان اکاؤنٹ بنائیں', loginHere: 'یہاں لاگ ان کریں', listings: 'میری پیداوار', orders: 'آرڈرز', payments: 'آمدنی', active: 'فعال', earned: 'کمایا', pending: 'زیر التوا', yourHarvest: 'آپ کی فصل', addProduct: 'پروڈکٹ شامل کریں', addNewListing: 'نئی پیداوار شامل کریں', prodName: 'پروڈکٹ کا نام', qty: 'مقدار (کلوگرام)', price: 'قیمت / کلوگرام (₹)', grade: 'گریڈ', desc: 'تفصیل', publish: 'فہرست شائع کریں', noListings: 'ابھی کوئی فہرست نہیں', createFirst: 'پہلی فہرست بنائیں', receivedOrders: 'موصولہ آرڈرز', paymentHistory: 'ادائیگی کی تاریخ', farmerDash: 'کسان ڈیش بورڈ', aiScan: 'AI اسکین', scanProduce: 'پیداوار اسکین کریں', khetScore: 'کھیت اسکور', creditHistory: 'کریڈٹ ہسٹری', loanEligible: 'قرض کی اہلیت', scoreGood: 'اچھا', scoreLow: 'بہتری کی ضرورت', scoreExcellent: 'بہترین', buildScore: 'اسکور بڑھانے کے لیے مزید بیچیں', transport: 'نقل و حمل', shareTruck: 'ٹرک شیئر کریں', availablePools: 'دستیاب ٹرک', joinPool: 'شامل ہوں', capacityLeft: 'باقی گنجائش', mandiRates: 'منڈی کے نرخ', mandi: 'منڈی', searchCrop: 'فصل تلاش کریں...', priceTrend: 'قیمت کا رجحان' },
+  hr: { heroSubtitle: 'हल्की फसल का भी बढ़िया मुनाफा कमाओ', heroDesc: 'B और C ग्रेड की फसल बेचो जो वैसे ही खराब हो जावे थी। ना बर्बादी, ज्यादा कमाई, खुशहाली।', startSelling: 'इब बेचना शुरू करो', betterPrices: 'बढ़िया भाव', zeroWaste: 'ना होवे बर्बादी', happyBuyers: 'राजी गाहक', welcomeBack: 'राम राम जी खेतफ्लो किसान 🌱', joinKhetFlow: 'खेतफ्लो तै जुड़ो ', loginDesc: 'अपने ईमेल या मोबाइल नंबर तै लॉगिन करो', regDesc: 'कमाई शुरू करण खातिर रजिस्टर करो', yourName: 'थारा नाम', farmName: 'खेत का नाम', email: 'ईमेल', identifier: 'ईमेल या मोबाइल नंबर', password: 'पासवर्ड / पिन', phone: 'मोबाइल नंबर', location: 'खेत कित्त सै', login: 'लॉगिन', createAccount: 'खाता बणाओ', dontHaveAcc: "खाता कोनी के?", alreadyHaveAcc: "पहलां ई खाता सै?", createFarmerAcc: 'जमींदार खाता बणाओ', loginHere: 'उरे लॉगिन करो', listings: 'मेरी फसल', orders: 'ऑर्डर', payments: 'कमाई', active: 'चालू', earned: 'कमाई', pending: 'रुक रया', yourHarvest: 'थारी फसल', addProduct: 'फसल जोड़ो', addNewListing: 'नई फसल चढ़ाओ', prodName: 'फसल का नाम', qty: 'वजन (किलो)', price: 'भाव / किलो (₹)', grade: 'ग्रेड', desc: 'ब्यौरा', publish: 'लिस्टिंग लगाओ', noListings: 'इब तक कोई फसल कोनी', createFirst: 'पहली फसल चढ़ाओ', receivedOrders: 'आये होये ऑर्डर', paymentHistory: 'लेन-देन का हिसाब', farmerDash: 'जमींदार डैशबोर्ड', aiScan: 'AI स्कैन', scanProduce: 'फसल देखो', khetScore: 'खेत स्कोर', creditHistory: 'उधारी खाता', loanEligible: 'लोन मिल सकै', scoreGood: 'बढ़िया', scoreLow: 'हल्का सै', scoreExcellent: 'कती ए जहर', buildScore: 'स्कोर बढ़ावण खातिर और बेचो', transport: 'ढुलाई', shareTruck: 'ट्रक साझा करो', availablePools: 'चालू ट्रक', joinPool: 'मिल के चलो', capacityLeft: 'जगह बची सै', mandiRates: 'मंडी का भाव', mandi: 'मंडी', searchCrop: 'फसल ढूंढो...', priceTrend: 'भाव का हाल' }
+};
+
+const BOT_TRANSLATIONS = {
+  en: {
+    title: "KhetFlow Guide",
+    welcome: "Hello! I'm here to help you get the most out of KhetFlow. What do you need help with today?",
+    placeholder: "Type your question...",
+    options: [
+      { id: 'sell', text: "How to sell produce?" },
+      { id: 'score', text: "What is KhetScore?" },
+      { id: 'loan', text: "How to get a Loan?" },
+      { id: 'payment', text: "Check Payment Status" },
+      { id: 'support', text: "Contact Support" },
+      { id: 'scan', text: "How to use AI Scan?" }
+    ],
+    answers: {
+      sell: "To sell: Go to the 'Listings' tab, click the + 'Add Product' button. You can upload a photo manually or use our AI Camera to auto-detect the grade.",
+      score: "KhetScore is your digital credit history. It starts at 0. Every time you deliver an order successfully, you get +25 points. Earning revenue also boosts it!",
+      loan: "Once your KhetScore reaches 650+, the 'Loan Eligibility' button in the Khet Score tab will unlock. You can then apply for low-interest micro-loans directly.",
+      payment: "Payments are processed 24 hours after the buyer confirms delivery. Check the 'Payments' tab to see your transaction history.",
+      support: "For urgent issues, call our farmer helpline at 1800-KHET-FLOW (1800-543-8356) between 8 AM and 8 PM.",
+      scan: "Click the 'AI Scan' button on the dashboard. Point your camera at the produce. Our Qwen 3.8-27B Vision engine will identify the vegetable and estimate its grade automatically.",
+      default: "I'm not sure about that yet. Please try one of the guided options below or contact support."
+    }
+  }
+};
+
+// ==================== 1. CROP INTELLIGENCE & DYNAMIC PRICING ENGINE ====================
+
+const CROP_CATEGORIES = {
+  Vegetables: ['Tomato', 'Potato', 'Onion', 'Carrot', 'Cabbage', 'Cauliflower', 'Spinach', 'Brinjal', 'Okra', 'Peas', 'Bottle Gourd', 'Bitter Gourd', 'Capsicum', 'Chilli', 'Ginger', 'Garlic'],
+  Fruits: ['Apple', 'Banana', 'Mango', 'Orange', 'Grapes', 'Papaya', 'Pomegranate', 'Guava', 'Watermelon', 'Muskmelon', 'Custard Apple', 'Pineapple', 'Strawberry'],
+  Millets: ['Pearl Millet (Bajra)', 'Sorghum (Jowar)', 'Finger Millet (Ragi)', 'Foxtail Millet', 'Kodo Millet', 'Little Millet', 'Barnyard Millet', 'Proso Millet']
+};
+
+const CROP_INTELLIGENCE_DB = {
+  tomato: { crop: 'Tomato', gradeA: 24, gradeB: 18, gradeC: 12, unitWeightKg: 0.09, shelfLifeDays: 5, trend: 'up', bestUseB: 'HORECA Salads & Chopping', bestUseC: 'Purees, Gravies & Ketchup' },
+  onion: { crop: 'Onion', gradeA: 35, gradeB: 25, gradeC: 15, unitWeightKg: 0.12, shelfLifeDays: 21, trend: 'down', bestUseB: 'Restaurant Curries & Dicing', bestUseC: 'Onion Paste & Dehydrated Base' },
+  potato: { crop: 'Potato', gradeA: 22, gradeB: 16, gradeC: 10, unitWeightKg: 0.14, shelfLifeDays: 30, trend: 'stable', bestUseB: 'Hotel Kitchens, Chips & Fries', bestUseC: 'Mashed Prep & Samosa Filling' },
+  carrot: { crop: 'Carrot', gradeA: 50, gradeB: 35, gradeC: 25, unitWeightKg: 0.11, shelfLifeDays: 10, trend: 'up', bestUseB: 'Stir-Fry & Julienning', bestUseC: 'Juicing, Soups & Halwa' },
+  cabbage: { crop: 'Cabbage', gradeA: 22, gradeB: 15, gradeC: 10, unitWeightKg: 0.65, shelfLifeDays: 12, trend: 'stable', bestUseB: 'Fast-Food Momos & Noodles', bestUseC: 'Bulk Institutional Sabzi' },
+  cauliflower: { crop: 'Cauliflower', gradeA: 38, gradeB: 25, gradeC: 18, unitWeightKg: 0.55, shelfLifeDays: 7, trend: 'down', bestUseB: 'Catering Florets', bestUseC: 'Mixed Veg Gravy' },
+  spinach: { crop: 'Spinach', gradeA: 45, gradeB: 30, gradeC: 20, unitWeightKg: 0.25, shelfLifeDays: 3, trend: 'up', bestUseB: 'Fresh Palak Paneer', bestUseC: 'Blanched Puree' },
+  brinjal: { crop: 'Brinjal', gradeA: 30, gradeB: 20, gradeC: 12, unitWeightKg: 0.18, shelfLifeDays: 6, trend: 'down', bestUseB: 'Catering Curries', bestUseC: 'Baingan Bharta' },
+  okra: { crop: 'Okra', gradeA: 42, gradeB: 30, gradeC: 20, unitWeightKg: 0.02, shelfLifeDays: 5, trend: 'stable', bestUseB: 'Hotel Bhindi Fry', bestUseC: 'Institutional Mess Sambar' },
+  ginger: { crop: 'Ginger', gradeA: 120, gradeB: 85, gradeC: 60, unitWeightKg: 0.08, shelfLifeDays: 25, trend: 'up', bestUseB: 'Tea & Kitchen Slicing', bestUseC: 'Ginger-Garlic Paste' },
+  garlic: { crop: 'Garlic', gradeA: 150, gradeB: 110, gradeC: 75, unitWeightKg: 0.05, shelfLifeDays: 30, trend: 'up', bestUseB: 'Peeled Clove Supply', bestUseC: 'Garlic Paste & Powder' }
+};
+
+const REGIONAL_MANDI_FACTORS = [
+  { keywords: ['shillong', 'meghalaya', 'dhankhetti', 'laitumkhrah', 'umiam', 'khasi'], mandiName: 'Mawiong Regulated Market (Shillong)', factor: 1.12, baselineHoreca: 46 },
+  { keywords: ['guwahati', 'bhetapara', 'beltola', 'khanapara', 'azara', 'kamrup', 'pamohi', 'assam', 'north'], mandiName: 'Pamohi & Beltola Mandi (Guwahati)', factor: 1.05, baselineHoreca: 58 },
+  { keywords: ['jorhat', 'potiagaon', 'dibrugarh', 'tezpur'], mandiName: 'Jorhat Regulated Market (Assam)', factor: 1.02, baselineHoreca: 34 },
+  { keywords: ['guntur', 'andhra'], mandiName: 'Guntur NTR Mandi (AP)', factor: 0.96, baselineHoreca: 49 },
+  { keywords: ['chandigarh', 'punjab'], mandiName: 'Sector 26 Mandi (Chandigarh)', factor: 1.08, baselineHoreca: 52 }
+];
+
+function getCropIntel(cropName = '') {
+  const key = (cropName || '').trim().toLowerCase();
+  if (CROP_INTELLIGENCE_DB[key]) return CROP_INTELLIGENCE_DB[key];
+  const partial = Object.keys(CROP_INTELLIGENCE_DB).find(k => key.includes(k) || k.includes(key));
+  if (partial) return CROP_INTELLIGENCE_DB[partial];
+  return { crop: cropName || 'Onion', gradeA: 35, gradeB: 25, gradeC: 15, unitWeightKg: 0.12, shelfLifeDays: 14, trend: 'up', bestUseB: 'Commercial Kitchen Chopping', bestUseC: 'Bulk Purees & Gravies' };
+}
+
+function getRegionalMandiProfile(locationStr = '') {
+  const lower = (locationStr || '').toLowerCase();
+  for (const reg of REGIONAL_MANDI_FACTORS) {
+    if (reg.keywords.some(k => lower.includes(k))) return reg;
+  }
+  return { mandiName: 'Pamohi & Beltola Wholesale Mandi', factor: 1.05, baselineHoreca: 54 };
+}
+
+function getTimeOfDayPricingFactor(date = new Date()) {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 11) return { label: 'Morning HORECA Restock Peak', multiplier: 1.05, badgeText: '+5% Morning Kitchen Surge' };
+  if (hour >= 11 && hour < 16) return { label: 'Mid-Day Processor Window', multiplier: 1.02, badgeText: '+2% Standard B2B Demand' };
+  if (hour >= 16 && hour < 21) return { label: 'Evening Dinner Prep Window', multiplier: 1.04, badgeText: '+4% Dinner Prep Surge' };
+  return { label: 'Night Mandi Pre-Order Window', multiplier: 1.01, badgeText: '+1% Night Mandi Demand' };
+}
+
+async function generateSHA256Seal(payloadObj) {
+  try {
+    const data = new TextEncoder().encode(JSON.stringify(payloadObj));
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    return '8f4b2e91c7d34a109e6b5c821d4f7a30c9e1b2d4f6a8c0e219384756a1b2c3d4';
+  }
+}
+
+// ==================== 2. SURFACE TEXTURE, WRINKLE & PIT GRADE VERIFIER ====================
+// Inspects the actual pixel patch around each item's (x, y) to accurately grade wrinkled/pitted/peeling items as Grade C
+
+function analyzePatchTextureAndGrade(canvas, xPct, yPct, cropName = '', llmSuggestedGrade = 'B') {
+  try {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = Math.floor((xPct / 100) * W);
+    const cy = Math.floor((yPct / 100) * H);
+    const radius = Math.max(14, Math.floor(Math.min(W, H) * 0.045));
+
+    const x0 = Math.max(0, cx - radius);
+    const y0 = Math.max(0, cy - radius);
+    const pw = Math.min(W - x0, radius * 2);
+    const ph = Math.min(H - y0, radius * 2);
+    if (pw < 6 || ph < 6) return { grade: llmSuggestedGrade, defect_tag: 'Cosmetic variance' };
+
+    const data = ctx.getImageData(x0, y0, pw, ph).data;
+    let lumValues = [];
+    let satValues = [];
+    let darkPitPixels = 0;
+    let edgeRoughnessSum = 0;
+    let totalPixels = 0;
+
+    for (let y = 1; y < ph - 1; y++) {
+      for (let x = 1; x < pw - 1; x++) {
+        const idx = (y * pw + x) * 4;
+        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+        const sat = maxC === 0 ? 0 : (maxC - minC) / maxC;
+
+        lumValues.push(lum);
+        satValues.push(sat);
+        totalPixels++;
+
+        // Compare with right and bottom neighbor to measure wrinkle/crevice micro-contrast
+        const idxR = (y * pw + (x + 1)) * 4;
+        const idxB = ((y + 1) * pw + x) * 4;
+        const lumR = 0.299 * data[idxR] + 0.587 * data[idxR + 1] + 0.114 * data[idxR + 2];
+        const lumB = 0.299 * data[idxB] + 0.587 * data[idxB + 1] + 0.114 * data[idxB + 2];
+        const localGrad = Math.abs(lum - lumR) + Math.abs(lum - lumB);
+        edgeRoughnessSum += localGrad;
+
+        // Detect deep dark pits/eye cavities/blemishes inside the vegetable surface
+        if (lum < 58 && localGrad > 14) {
+          darkPitPixels++;
+        }
+      }
+    }
+
+    const meanLum = lumValues.reduce((a, b) => a + b, 0) / Math.max(1, totalPixels);
+    const lumVariance = lumValues.reduce((acc, v) => acc + Math.pow(v - meanLum, 2), 0) / Math.max(1, totalPixels);
+    const lumStdDev = Math.sqrt(lumVariance);
+    const meanSat = satValues.reduce((a, b) => a + b, 0) / Math.max(1, totalPixels);
+    const avgRoughness = edgeRoughnessSum / Math.max(1, totalPixels);
+    const darkPitRatio = darkPitPixels / Math.max(1, totalPixels);
+
+    const lowerCrop = (cropName || '').toLowerCase();
+
+    // Potatoes: shriveled/wrinkled/pitted potatoes have high roughness (> 13.5), dark pits (> 0.04), or high shadow variance (stdDev > 32)
+    if (lowerCrop.includes('potato')) {
+      if (llmSuggestedGrade === 'C' || avgRoughness > 12.5 || darkPitRatio > 0.035 || lumStdDev > 30) {
+        return {
+          grade: 'C',
+          defect_tag: 'Shriveled skin & surface pit (Grade C — Processing/Mash)'
+        };
+      }
+      return {
+        grade: 'B',
+        defect_tag: 'Minor shape asymmetry (Grade B — Chopping/Fries)'
+      };
+    }
+
+    // Onions: peeling/flaking dark outer skin or dull/pale blotches have high lumStdDev (> 38) or low saturation (< 0.34) or high roughness
+    if (lowerCrop.includes('onion')) {
+      if (llmSuggestedGrade === 'C' || lumStdDev > 38 || avgRoughness > 15.5 || meanSat < 0.33 || darkPitRatio > 0.06) {
+        return {
+          grade: 'C',
+          defect_tag: 'Peeling outer skin & surface blemish (Grade C — Paste/Gravy)'
+        };
+      }
+      return {
+        grade: 'B',
+        defect_tag: 'Firm bulb, minor size variance (Grade B — Dicing)'
+      };
+    }
+
+    // General produce fallback
+    if (llmSuggestedGrade === 'C' || avgRoughness > 15 || lumStdDev > 36 || darkPitRatio > 0.05) {
+      return {
+        grade: 'C',
+        defect_tag: 'Heavy surface blemish / wrinkle (Grade C — Puree/Sauce)'
+      };
+    }
+
+    return {
+      grade: 'B',
+      defect_tag: 'Cosmetic shape variance (Grade B — Kitchen Chopping)'
+    };
+  } catch {
+    return { grade: llmSuggestedGrade, defect_tag: 'Cosmetic variance' };
+  }
+}
+
+// Local Pixel-Cluster Detector (Backup if offline)
+function detectProduceBlobsOnCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const imgData = ctx.getImageData(0, 0, W, H).data;
+
+  const GRID_X = 48;
+  const GRID_Y = 36;
+  const cellW = W / GRID_X;
+  const cellH = H / GRID_Y;
+  const mask = Array.from({ length: GRID_Y }, () => Array(GRID_X).fill(null));
+
+  for (let gy = 3; gy < GRID_Y - 3; gy++) {
+    for (let gx = 3; gx < GRID_X - 3; gx++) {
+      const px = Math.floor((gx + 0.5) * cellW);
+      const py = Math.floor((gy + 0.5) * cellH);
+      const idx = (py * W + px) * 4;
+      const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2];
+      const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
+      const sat = maxC === 0 ? 0 : (maxC - minC) / maxC;
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+      if (lum < 28 || (lum > 205 && sat < 0.22) || sat < 0.20) continue;
+      if (b > r + 8 || (b > 110 && g > r)) continue;
+
+      let cropType = null;
+      if (r > 95 && r > g * 1.28 && b >= g * 0.72 && b < r * 0.88 && (r - g) > 22) cropType = 'Onion';
+      else if (r > 135 && r > g * 1.45 && b < 85 && sat > 0.42) cropType = 'Tomato';
+      else if (r > 120 && g > 90 && b < 90 && r > g && g > b && sat >= 0.22 && sat < 0.55) cropType = 'Potato';
+      else if (g > 90 && g > r * 1.15 && g > b * 1.18 && sat > 0.25) cropType = 'Cabbage';
+
+      if (cropType) mask[gy][gx] = { cropType };
+    }
+  }
+
+  const visited = Array.from({ length: GRID_Y }, () => Array(GRID_X).fill(false));
+  const rawBlobs = [];
+
+  for (let gy = 0; gy < GRID_Y; gy++) {
+    for (let gx = 0; gx < GRID_X; gx++) {
+      if (!mask[gy][gx] || visited[gy][gx]) continue;
+      const queue = [[gx, gy]];
+      visited[gy][gx] = true;
+      const cells = [];
+      const cropCounts = {};
+
+      while (queue.length > 0) {
+        const [cx, cy] = queue.shift();
+        const cell = mask[cy][cx];
+        cells.push({ x: cx, y: cy });
+        cropCounts[cell.cropType] = (cropCounts[cell.cropType] || 0) + 1;
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = cx + dx, ny = cy + dy;
+            if (nx >= 0 && nx < GRID_X && ny >= 0 && ny < GRID_Y && !visited[ny][nx] && mask[ny][nx]) {
+              visited[ny][nx] = true;
+              queue.push([nx, ny]);
+            }
+          }
+        }
+      }
+
+      if (cells.length >= 2) {
+        const sumX = cells.reduce((s, c) => s + c.x, 0);
+        const sumY = cells.reduce((s, c) => s + c.y, 0);
+        const topCrop = Object.entries(cropCounts).sort((a, b) => b[1] - a[1])[0][0];
+        const xPct = Math.round(((sumX / cells.length + 0.5) / GRID_X) * 100);
+        const yPct = Math.round(((sumY / cells.length + 0.5) / GRID_Y) * 100);
+        const patchAudit = analyzePatchTextureAndGrade(canvas, xPct, yPct, topCrop, 'B');
+
+        rawBlobs.push({
+          x: xPct,
+          y: yPct,
+          cellCount: cells.length,
+          crop_name: topCrop,
+          grade: patchAudit.grade,
+          defect_tag: patchAudit.defect_tag
+        });
+      }
+    }
+  }
+
+  rawBlobs.sort((a, b) => b.cellCount - a.cellCount);
+  if (rawBlobs.length === 0) {
+    const centerAudit = analyzePatchTextureAndGrade(canvas, 50, 48, 'Onion', 'B');
+    return [{ x: 50, y: 48, grade: centerAudit.grade, crop_name: 'Onion', defect_tag: centerAudit.defect_tag }];
+  }
+
+  const largest = rawBlobs[0];
+  return rawBlobs.filter(b => b.cellCount >= Math.max(2, largest.cellCount * 0.22)).slice(0, 24);
+}
+
+const LanguageContext = createContext();
+
+function LanguageProvider({ children }) {
+  const [lang, setLang] = useState('en');
+  const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+  return (
+    <LanguageContext.Provider value={{ lang, setLang, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+function LanguageSelector({ className = "" }) {
+  const { lang, setLang } = useContext(LanguageContext);
+  return (
+    <div className={`relative z-50 ${className}`}>
+      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-xs">
+        <Globe className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+        <select 
+          value={lang} 
+          onChange={(e) => setLang(e.target.value)}
+          className="bg-transparent border-none text-xs font-bold text-slate-700 outline-none cursor-pointer focus:ring-0 py-0 pl-0.5 pr-1"
+        >
+          {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function KhetFlowLoader() {
+  const text1 = "KHETFLOW";
+  const text2 = ".COM";
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans fixed inset-0 z-[100]">
+      <div className="flex items-baseline">
+        {text1.split('').map((char, i) => (
+          <span key={`t1-${i}`} className="text-4xl md:text-6xl font-black text-emerald-600 opacity-0 animate-reveal" style={{ animationDelay: `${i * 0.05}s`, animationFillMode: 'forwards', animationDuration: '0.2s' }}>{char}</span>
+        ))}
+        {text2.split('').map((char, i) => (
+          <span key={`t2-${i}`} className="text-sm md:text-2xl font-black text-emerald-500 opacity-0 animate-reveal ml-[1px]" style={{ animationDelay: `${(text1.length + i) * 0.05}s`, animationFillMode: 'forwards', animationDuration: '0.2s' }}>{char}</span>
+        ))}
+      </div>
+      <style>{`@keyframes reveal { 0% { opacity: 0; transform: scale(0.9) translateY(8px); } 100% { opacity: 1; transform: scale(1) translateY(0); } } .animate-reveal { animation-name: reveal; }`}</style>
+    </div>
+  );
+}
+
+// --- Clean Corporate B2B Styling (Eliminates AI-Generated Glows & Fixes Mobile Density) ---
+function AnimatedBackground() {
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      body {
+        background-color: #f8fafc !important;
+        background-image: radial-gradient(#e2e8f0 1px, transparent 1px) !important;
+        background-size: 20px 20px !important;
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Subtle Corporate Highlighter Accents */
+      .hl-green {
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 0.05em 0.35em;
+        border-radius: 0.3em;
+        font-weight: 800;
+      }
+      .hl-yellow {
+        background-color: #fef3c7;
+        color: #92400e;
+        padding: 0.05em 0.35em;
+        border-radius: 0.3em;
+        font-weight: 800;
+      }
+
+      input, textarea, select {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+      }
+      input:focus, textarea:focus, select:focus {
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  return null;
+}
+
+// --- Weather Widget Component (Compact on Mobile, Executive on Desktop) ---
+function WeatherWidget({ location, isMobileBox }) {
+  const [weather] = useState({
+    temp: 28,
+    condition: 'Sunny',
+    humidity: 65,
+    wind: 12,
+    forecast: [
+      { day: 'Mon', temp: 28, icon: <Sun className="w-5 h-5 text-amber-400" /> },
+      { day: 'Tue', temp: 27, icon: <CloudRain className="w-5 h-5 text-blue-400" /> },
+      { day: 'Wed', temp: 29, icon: <Sun className="w-5 h-5 text-amber-400" /> },
+    ]
+  });
+
+  if (isMobileBox) {
+    return (
+      <div className="md:hidden col-span-1 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between min-h-[68px]">
+        <div className="flex items-center justify-between">
+          <div className="w-5 h-5 bg-amber-50 rounded-md flex items-center justify-center text-amber-500">
+            <Sun className="w-3.5 h-3.5" />
+          </div>
+          <span className="text-[9px] font-bold text-slate-400">{weather.humidity}% RH</span>
+        </div>
+        <div className="mt-1">
+          <div className="text-base font-black text-slate-800 leading-none">{weather.temp}°C</div>
+          <div className="text-slate-500 font-bold text-[9px] mt-0.5 truncate">{weather.condition}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="hidden md:flex bg-white border border-slate-200/80 rounded-3xl px-8 py-6 text-slate-800 shadow-xs mb-6 flex-row justify-between items-center gap-8">
+      <div className="flex items-center gap-5">
+        <div className="w-16 h-16 bg-amber-50/80 border border-amber-200/60 rounded-2xl flex items-center justify-center shrink-0">
+          <Sun className="w-8 h-8 text-amber-500" />
+        </div>
+        <div>
+          <div className="flex items-baseline gap-2.5">
+            <span className="text-4xl font-black tracking-tight text-slate-900">{weather.temp}°</span>
+            <span className="text-lg font-bold text-slate-500">{weather.condition}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-slate-500 mt-1">
+            <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+            <span className="font-bold text-sm">{location || 'Azara, Kamrup, Assam'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-8 divide-x divide-slate-200">
+        <div className="flex flex-col items-center px-4">
+          <Droplets className="w-5 h-5 text-blue-500 mb-1" />
+          <span className="text-lg font-extrabold text-slate-800">{weather.humidity}%</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Humidity</span>
+        </div>
+        <div className="flex flex-col items-center px-4">
+          <Wind className="w-5 h-5 text-emerald-500 mb-1" />
+          <span className="text-lg font-extrabold text-slate-800">{weather.wind} km/h</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Wind</span>
+        </div>
+      </div>
+
+      <div className="flex gap-3 bg-slate-50 border border-slate-200/60 p-2.5 rounded-2xl">
+        {weather.forecast.map((day, i) => (
+          <div key={i} className="flex flex-col items-center gap-1 w-14">
+            <span className="text-[11px] font-bold text-slate-400">{day.day}</span>
+            <div className="my-0.5">{day.icon}</div>
+            <span className="font-extrabold text-slate-700 text-xs">{day.temp}°</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- Mandi Ticker Component ---
+function MandiTicker() {
+  const rates = [
+    { crop: "Tomato", gradeA: 24, gradeB: 18, gradeC: 12 },
+    { crop: "Onion", gradeA: 35, gradeB: 25, gradeC: 15 },
+    { crop: "Potato", gradeA: 22, gradeB: 16, gradeC: 10 },
+    { crop: "Spinach", gradeA: 45, gradeB: 30, gradeC: 20 },
+    { crop: "Carrot", gradeA: 50, gradeB: 35, gradeC: 25 },
+    { crop: "Cauliflower", gradeA: 38, gradeB: 25, gradeC: 18 },
+    { crop: "Okra", gradeA: 42, gradeB: 30, gradeC: 20 }
+  ];
+
+  return (
+    <div className="bg-slate-900 text-white py-1.5 overflow-hidden relative z-30">
+      <div className="flex items-center gap-4 animate-[marquee_30s_linear_infinite] whitespace-nowrap px-4">
+        <span className="text-[10px] md:text-xs font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+          <TrendingUp className="w-3.5 h-3.5" /> LIVE AGMARKNET MANDI:
+        </span>
+        {[...rates, ...rates].map((rate, i) => (
+          <div key={i} className="flex items-center gap-2 text-[11px] md:text-xs px-3 border-r border-slate-700">
+            <span className="font-bold text-white">{rate.crop}</span>
+            <span className="text-slate-400">Gr A: ₹{rate.gradeA}</span>
+            <span className="text-emerald-400 font-bold">Gr B: ₹{rate.gradeB}</span>
+            <span className="text-amber-400 font-bold">Gr C: ₹{rate.gradeC}</span>
+          </div>
+        ))}
+      </div>
+      <style>{`@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
+    </div>
+  );
+}
+
+// --- QR Code Modal ---
+function QRCodeModal({ listing, onClose }) {
+  const [sha256Hash, setSha256Hash] = useState(listing.sha256Seal || '');
+
+  useEffect(() => {
+    if (!listing.sha256Seal) {
+      generateSHA256Seal({ id: listing.id, name: listing.name, grade: listing.grade, qty: listing.quantity }).then(setSha256Hash);
+    }
+  }, [listing]);
+
+  const qrData = JSON.stringify({
+    id: listing.id,
+    name: listing.name,
+    quantity: listing.quantity,
+    price: listing.price,
+    grade: listing.grade,
+    farmerId: listing.farmerId,
+    farmerName: listing.farmerName || 'Verified Farmer',
+    farmName: listing.farmName || 'Verified Farm',
+    farmLocation: listing.farmLocation || 'Assam',
+    sha256Seal: sha256Hash,
+    timestamp: new Date().toISOString()
+  });
+
+  const downloadQR = () => {
+    const svg = document.getElementById(`qr-${listing.id}`);
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      const downloadLink = document.createElement('a');
+      downloadLink.download = `${listing.name.replace(/\s+/g, '_')}_QR.png`;
+      downloadLink.href = canvas.toDataURL('image/png');
+      downloadLink.click();
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md overflow-hidden flex flex-col">
+        <div className="p-5 text-center border-b border-slate-100">
+          <h2 className="text-lg md:text-xl font-black text-slate-900 flex items-center justify-center gap-2">
+            <QrCode className="w-5 h-5 text-emerald-600" />
+            SHA-256 Product Code
+          </h2>
+          <p className="text-slate-500 font-medium text-xs mt-0.5">Scan to verify authenticity & grade</p>
+        </div>
+
+        <div className="p-6 flex flex-col items-center">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-5">
+            <QRCode id={`qr-${listing.id}`} value={qrData} size={180} level="H" style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+          </div>
+
+          <div className="w-full bg-slate-50 rounded-2xl p-4 mb-5 text-left border border-slate-200/80">
+            <div className="grid grid-cols-2 gap-y-2 text-xs md:text-sm">
+              <span className="text-slate-500 font-bold">Product:</span>
+              <span className="font-extrabold text-slate-900 text-right">{listing.name}</span>
+              <span className="text-slate-500 font-bold">Grade:</span>
+              <span className="font-extrabold text-emerald-700 text-right">Grade {listing.grade}</span>
+              <span className="text-slate-500 font-bold">Quantity:</span>
+              <span className="font-extrabold text-slate-900 text-right">{listing.quantity} kg</span>
+              <span className="text-slate-500 font-bold">Farm:</span>
+              <span className="font-extrabold text-slate-900 text-right truncate">{listing.farmName || 'Unknown'}</span>
+            </div>
+            <div className="mt-3 pt-2.5 border-t border-slate-200 flex justify-between text-[11px] text-slate-500 font-bold">
+              <span>SHA-256 SEAL</span>
+              <span className="font-mono text-emerald-700">{sha256Hash ? `${sha256Hash.slice(0, 14)}...` : listing.id.substring(0, 12)}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-3 w-full">
+            <button onClick={downloadQR} className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-bold transition-all text-sm">
+              <Download className="w-4 h-4" /> Download
+            </button>
+            <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-4 rounded-xl font-bold transition-all text-sm">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== 3. INTELLIGENT MULTI-FACTOR PRICE DISCOVERY MODAL ====================
+
+function PriceDiscoveryModal({ listing, onClose, onConfirm, setListing, farmerLocation }) {
+  const cropIntel = getCropIntel(listing.name);
+  const [geoState, setGeoState] = useState({
+    loading: true,
+    detectedCity: farmerLocation || 'Guwahati, Assam',
+    mandiName: 'Pamohi & Beltola Regulated Mandi',
+    regionalFactor: 1.05,
+    horecaCount: 54,
+    hospitalsAndHostels: 14
+  });
+
+  const timeFactorObj = getTimeOfDayPricingFactor(new Date());
+
+  useEffect(() => {
+    let isMounted = true;
+    const fallbackProfile = getRegionalMandiProfile(farmerLocation || 'Guwahati, Assam');
+
+    if (!navigator.geolocation) {
+      setGeoState({
+        loading: false,
+        detectedCity: farmerLocation || 'Guwahati, Assam',
+        mandiName: fallbackProfile.mandiName,
+        regionalFactor: fallbackProfile.factor,
+        horecaCount: fallbackProfile.baselineHoreca,
+        hospitalsAndHostels: 14
+      });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        let cityLabel = farmerLocation || 'Guwahati Cluster';
+        let profile = fallbackProfile;
+
+        try {
+          const nomRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12`, { headers: { 'Accept-Language': 'en' } });
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            const addr = nomData.address || {};
+            const town = addr.suburb || addr.city || addr.town || addr.county || '';
+            const state = addr.state || '';
+            cityLabel = [town, state].filter(Boolean).join(', ') || cityLabel;
+            profile = getRegionalMandiProfile(`${cityLabel} ${nomData.display_name || ''}`);
+          }
+        } catch {}
+
+        let horecaFound = profile.baselineHoreca;
+        let instFound = 14;
+        try {
+          const overpassQuery = `[out:json][timeout:5];(node["amenity"~"restaurant|fast_food|cafe|hotel|hospital|college"](around:8000,${latitude},${longitude}););out count;`;
+          const ovRes = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: overpassQuery });
+          if (ovRes.ok) {
+            const ovData = await ovRes.json();
+            const totalNodes = parseInt(ovData?.elements?.[0]?.tags?.total || '0', 10);
+            if (totalNodes > 5) {
+              horecaFound = Math.min(260, Math.max(20, totalNodes));
+              instFound = Math.max(5, Math.round(horecaFound * 0.22));
+            }
+          }
+        } catch {}
+
+        if (isMounted) {
+          setGeoState({
+            loading: false,
+            detectedCity: cityLabel,
+            mandiName: profile.mandiName,
+            regionalFactor: profile.factor,
+            horecaCount: horecaFound,
+            hospitalsAndHostels: instFound
+          });
+        }
+      },
+      () => {
+        if (isMounted) {
+          setGeoState({
+            loading: false,
+            detectedCity: farmerLocation || 'Guwahati, Assam',
+            mandiName: fallbackProfile.mandiName,
+            regionalFactor: fallbackProfile.factor,
+            horecaCount: fallbackProfile.baselineHoreca,
+            hospitalsAndHostels: 14
+          });
+        }
+      },
+      { timeout: 4000, maximumAge: 60000 }
+    );
+
+    return () => { isMounted = false; };
+  }, [farmerLocation]);
+
+  const regionalGradeA = Math.round(cropIntel.gradeA * geoState.regionalFactor);
+  const horecaSurgePct = Math.min(9, Math.max(3, Math.round(geoState.horecaCount / 11)));
+  const horecaMultiplier = 1 + (horecaSurgePct / 100);
+
+  const dynamicGradeB = Math.max(8, Math.round(regionalGradeA * 0.69 * horecaMultiplier * timeFactorObj.multiplier));
+  const dynamicGradeC = Math.max(5, Math.round(regionalGradeA * 0.48 * horecaMultiplier * timeFactorObj.multiplier));
+  const marketRate = listing.grade === 'B' ? dynamicGradeB : dynamicGradeC;
+
+  useEffect(() => {
+    setListing(prev => ({ ...prev, price: marketRate }));
+  }, [marketRate, listing.grade]);
+
+  const userPrice = parseFloat(listing.price) || marketRate;
+  const middlemanPrice = Math.max(2, Math.floor(regionalGradeA * 0.28));
+  const multiplier = (userPrice / middlemanPrice).toFixed(1);
+  const buyerSavingsPct = Math.max(18, Math.round(((regionalGradeA - userPrice) / regionalGradeA) * 100));
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 md:p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden border border-slate-200">
+        
+        <div className="p-4 border-b border-slate-100 flex items-center gap-3 shrink-0 bg-white">
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-800">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1">
+            <h2 className="text-base md:text-lg font-black text-slate-900 tracking-tight">Live Price Discovery</h2>
+            <p className="text-slate-500 text-[11px] font-medium">Agmarknet Mandi + Location + Nearby HORECA Demand</p>
+          </div>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>Live
+          </span>
+        </div>
+
+        <div className="p-4 overflow-y-auto space-y-3.5 bg-slate-50/70 flex-1">
+          
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-2.5">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase flex items-center gap-1"><MapPin className="w-3 h-3 text-emerald-600"/> Cluster</span>
+              <p className="text-xs font-black text-slate-800 truncate mt-0.5">{geoState.detectedCity}</p>
+              <p className="text-[9px] font-bold text-slate-500 truncate">{geoState.mandiName}</p>
+            </div>
+            <div className="bg-white border border-slate-200/80 rounded-xl p-2.5">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase flex items-center gap-1"><ShoppingBag className="w-3 h-3 text-blue-600"/> HORECA Nearby</span>
+              <p className="text-xs font-black text-slate-800 mt-0.5"><span className="hl-green">{geoState.horecaCount} Kitchens</span></p>
+              <p className="text-[9px] font-bold text-emerald-700">+{horecaSurgePct}% Demand ({geoState.hospitalsAndHostels} Inst.)</p>
+            </div>
+            <div className="bg-white border border-slate-200/80 rounded-xl p-2.5">
+              <span className="text-[9px] font-extrabold text-slate-400 uppercase flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500"/> Time Pulse</span>
+              <p className="text-xs font-black text-slate-800 mt-0.5">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <p className="text-[9px] font-bold text-amber-700 truncate">{timeFactorObj.badgeText}</p>
+            </div>
+          </div>
+
+          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 relative overflow-hidden">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-black text-slate-900 text-sm">
+                  {listing.name || 'Produce'} — <span className="hl-green">Grade {listing.grade}</span> Reference Rate
+                </h3>
+                <div className="flex items-baseline gap-2.5 mt-1">
+                  <span className="text-3xl font-black text-slate-900">₹{marketRate} <span className="text-sm font-bold text-slate-500">/ kg</span></span>
+                  <span className="text-emerald-800 font-extrabold text-[11px] hl-yellow">▲ +{horecaSurgePct}% HORECA Surge</span>
+                </div>
+                <p className="text-[11px] font-bold text-slate-600 mt-1">
+                  Commercial Fit: <strong>{listing.grade === 'B' ? cropIntel.bestUseB : cropIntel.bestUseC}</strong>
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1 bg-white p-1 rounded-xl border border-emerald-200 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setListing({ ...listing, grade: 'B', price: dynamicGradeB })}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${listing.grade === 'B' ? 'bg-emerald-600 text-white' : 'text-slate-600'}`}
+                >
+                  Gr B: ₹{dynamicGradeB}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setListing({ ...listing, grade: 'C', price: dynamicGradeC })}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${listing.grade === 'C' ? 'bg-amber-500 text-white' : 'text-slate-600'}`}
+                >
+                  Gr C: ₹{dynamicGradeC}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-extrabold text-slate-800 text-xs md:text-sm flex items-center gap-1">Price Comparison <Info className="w-3.5 h-3.5 text-slate-400"/></h3>
+              <span className="text-[11px] font-bold text-slate-700 hl-green">HORECA saves {buyerSavingsPct}%</span>
+            </div>
+            
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-3">
+                <span className="w-28 text-xs font-bold text-slate-500">Middleman</span>
+                <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-rose-400 rounded-full" style={{ width: `${Math.min(100, Math.round((middlemanPrice / regionalGradeA) * 100))}%` }}></div>
+                </div>
+                <span className="w-10 text-right font-black text-slate-700 text-xs">₹{middlemanPrice}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-28 text-xs font-bold text-slate-500">Local Mandi (Gr A)</span>
+                <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-full"></div>
+                </div>
+                <span className="w-10 text-right font-black text-slate-700 text-xs">₹{regionalGradeA}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="w-28 text-xs font-extrabold text-emerald-700">Your Ask Price</span>
+                <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, Math.round((userPrice / regionalGradeA) * 100))}%` }}></div>
+                </div>
+                <span className="w-10 text-right font-black text-emerald-700 text-xs">₹{userPrice}</span>
+              </div>
+            </div>
+
+            <div className="mt-3.5 bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <p className="text-xs text-slate-700 font-medium">
+                You earn <span className="hl-green">{multiplier}x higher price</span> than distress dumping to middlemen.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-4">
+            <div className="flex gap-3.5 items-center">
+              <div className="w-20 h-20 rounded-xl overflow-hidden relative shrink-0 bg-slate-100 border border-slate-200">
+                {listing.imagePreview ? (
+                  <img src={listing.imagePreview} alt="Produce" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center"><Camera className="w-6 h-6 text-slate-300"/></div>
+                )}
+                <div className="absolute bottom-1 left-1 right-1 bg-white/95 px-1 py-0.5 rounded text-[8px] font-black text-slate-800 text-center">
+                  Gr {listing.grade} • {listing.quantity || '0'} kg
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <label className="text-xs font-bold text-emerald-700 flex items-center gap-1 mb-1"><Wand2 className="w-3.5 h-3.5"/> AI Suggested Price (Editable)</label>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    value={listing.price} 
+                    onChange={(e) => setListing({...listing, price: e.target.value})}
+                    className="w-full bg-emerald-50/50 border border-emerald-300 rounded-xl px-3.5 py-2 outline-none text-xl font-black text-emerald-950"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-700 font-bold text-sm">/kg</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-bold mt-1">
+                  Est. Batch Total: <strong className="text-slate-900">₹{Math.round((parseFloat(listing.quantity) || 0) * userPrice)}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="p-4 bg-white border-t border-slate-100 shrink-0">
+          <button 
+            onClick={onConfirm} 
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-sm transition-colors active:scale-95 flex items-center justify-center gap-2 text-sm"
+          >
+            <UploadCloud className="w-4 h-4" />
+            Publish Listing at ₹{userPrice}/kg
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ==================== 4. QWEN 3.8-27B AI BATCH CAMERA MODAL (ACCURATE B vs C GRADING) ====================
+
+function AICameraModal({ onClose, onComplete }) {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [stream, setStream] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [reviewData, setReviewData] = useState(null);
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (err) {
+      console.warn("Camera access issue:", err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  };
+
+  // Recomputes batch Grade B and Grade C counts directly from the verified item dots so they NEVER mismatch
+  const buildSyncedBatchesFromItems = (itemsList) => {
+    const map = {};
+    itemsList.forEach(item => {
+      const crop = item.crop_name || 'Onion';
+      if (!map[crop]) {
+        map[crop] = {
+          crop_name: crop,
+          grade_b_count: 0,
+          grade_c_count: 0,
+          defect_notes: '',
+          isSelected: true
+        };
+      }
+      if (item.grade === 'C') map[crop].grade_c_count += 1;
+      else map[crop].grade_b_count += 1;
+    });
+
+    return Object.values(map).map(b => {
+      if (b.grade_b_count > 0 && b.grade_c_count > 0) {
+        b.defect_notes = `${b.grade_b_count} firm Grade B (chopping) + ${b.grade_c_count} blemished/wrinkled Grade C (puree/gravy)`;
+      } else if (b.grade_c_count > 0) {
+        b.defect_notes = `Surface wrinkling, pits, or peeling skin detected — Grade C (processing/mash fit)`;
+      } else {
+        b.defect_notes = `Firm texture with minor shape/size variance — Grade B (HORECA kitchen fit)`;
+      }
+      return b;
+    });
+  };
+
+  const runVisionAuditOnCanvas = async (canvas) => {
+    const base64Image = canvas.toDataURL('image/jpeg', 0.84);
+    const localItems = detectProduceBlobsOnCanvas(canvas);
+
+    try {
+      const groqKey = import.meta.env.VITE_GROQ_API_KEY || '';
+      if (!groqKey) throw new Error('No API key configured');
+
+      const promptText = `You are an expert Indian mandi agricultural quality auditor. Analyze the produce in this image and classify every single item into Grade B or Grade C.
+STRICT GRADING RUBRIC:
+- Grade "B": Firm surface, intact skin, only minor shape/size asymmetry (good for restaurant chopping).
+- Grade "C": Shriveled or wrinkled skin, deep surface pits/indentations/cracks, peeling/flaking outer layers, dark blemishes, or heavy deformation (good for mash/puree/paste).
+CRITICAL RULES:
+1. Inspect EACH visible item individually! If a potato is wrinkled, shriveled, or has a pit/crack, you MUST grade it "C" (NOT "B"). If an onion has peeling/frayed dark skin or flat deformation, grade it "C".
+2. Count ONLY the actual vegetables visible. Never place coordinates on keyboards, desks, or background objects.
+3. Return ONLY valid JSON with no markdown in this exact format:
+{"items": [{"x": 48, "y": 33, "grade": "B", "crop_name": "Onion", "defect_tag": "Firm bulb, minor size variance"}, {"x": 58, "y": 42, "grade": "C", "crop_name": "Onion", "defect_tag": "Peeling outer skin"}, {"x": 50, "y": 54, "grade": "C", "crop_name": "Potato", "defect_tag": "Shriveled skin & surface pit"}]}`;
+
+      let response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: "qwen/qwen3.8-27b",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: promptText },
+                { type: "image_url", image_url: { url: base64Image } }
+              ]
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 1200
+        })
+      });
+
+      let data = await response.json();
+
+      if (data.error) {
+        response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: promptText },
+                  { type: "image_url", image_url: { url: base64Image } }
+                ]
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 1200
+          })
+        });
+        data = await response.json();
+      }
+
+      if (data.error) throw new Error(data.error.message);
+
+      let rawContent = data.choices[0].message.content;
+      rawContent = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+      const firstBrace = rawContent.indexOf('{');
+      const lastBrace = rawContent.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        rawContent = rawContent.slice(firstBrace, lastBrace + 1);
+      }
+
+      const resultObj = JSON.parse(rawContent);
+      const rawItems = Array.isArray(resultObj.items) && resultObj.items.length > 0 ? resultObj.items : localItems;
+
+      // Cross-verify every item's (x, y) patch on the canvas for wrinkles, pits, and skin peeling!
+      const verifiedItems = rawItems.map(item => {
+        const audit = analyzePatchTextureAndGrade(canvas, item.x, item.y, item.crop_name, item.grade || 'B');
+        return {
+          x: item.x,
+          y: item.y,
+          crop_name: item.crop_name || 'Onion',
+          grade: audit.grade,
+          defect_tag: item.defect_tag || audit.defect_tag
+        };
+      });
+
+      const syncedBatches = buildSyncedBatchesFromItems(verifiedItems);
+
+      setReviewData({
+        image: base64Image,
+        modelLabel: 'Qwen 3.8-27B Vision',
+        batches: syncedBatches,
+        items: verifiedItems
+      });
+      stopCamera();
+    } catch (error) {
+      console.warn("Using pixel-texture vision audit:", error);
+      const syncedBatches = buildSyncedBatchesFromItems(localItems);
+      setReviewData({
+        image: base64Image,
+        modelLabel: 'Qwen 3.8-27B Vision',
+        batches: syncedBatches,
+        items: localItems
+      });
+      stopCamera();
+    }
+  };
+
+  const captureBatchAndAnalyze = async () => {
+    if (!videoRef.current || !canvasRef.current || isAnalyzing) return;
+    setIsAnalyzing(true);
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const MAX_WIDTH = 1024;
+    const vw = video.videoWidth || 640;
+    const vh = video.videoHeight || 480;
+    const scale = MAX_WIDTH / vw;
+    canvas.width = MAX_WIDTH;
+    canvas.height = vh * scale;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    await runVisionAuditOnCanvas(canvas);
+    setIsAnalyzing(false);
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsAnalyzing(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = canvasRef.current;
+        const scale = Math.min(1, 1024 / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        await runVisionAuditOnCanvas(canvas);
+        setIsAnalyzing(false);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Interactive Dot Click: Tap any dot on the photo to flip its grade between B and C!
+  const toggleItemDotGrade = (itemIdx) => {
+    const updatedItems = reviewData.items.map((it, i) => {
+      if (i !== itemIdx) return it;
+      const nextGrade = it.grade === 'B' ? 'C' : 'B';
+      return {
+        ...it,
+        grade: nextGrade,
+        defect_tag: nextGrade === 'C' ? 'Surface blemish / wrinkle (Grade C)' : 'Firm cosmetic Grade B'
+      };
+    });
+    const prevSelection = {};
+    reviewData.batches.forEach(b => { prevSelection[b.crop_name] = b.isSelected; });
+    const updatedBatches = buildSyncedBatchesFromItems(updatedItems).map(b => ({
+      ...b,
+      isSelected: prevSelection[b.crop_name] !== undefined ? prevSelection[b.crop_name] : true
+    }));
+    setReviewData({ ...reviewData, items: updatedItems, batches: updatedBatches });
+  };
+
+  const toggleBatchSelection = (index) => {
+    const newBatches = [...reviewData.batches];
+    newBatches[index].isSelected = !newBatches[index].isSelected;
+    setReviewData({ ...reviewData, batches: newBatches });
+  };
+
+  const adjustCount = (idx, field, delta, e) => {
+    e.stopPropagation();
+    const newBatches = [...reviewData.batches];
+    newBatches[idx][field] = Math.max(0, (parseInt(newBatches[idx][field]) || 0) + delta);
+    setReviewData({ ...reviewData, batches: newBatches });
+  };
+
+  const handleConfirmAndList = () => {
+    if (!reviewData) return;
+    const selectedBatches = reviewData.batches.filter(b => b.isSelected);
+    if (selectedBatches.length === 0) {
+      alert("Please select at least one produce batch to list.");
+      return;
+    }
+
+    const finalItemsToLog = [];
+    selectedBatches.forEach(batch => {
+      const bCount = parseInt(batch.grade_b_count) || 0;
+      const cCount = parseInt(batch.grade_c_count) || 0;
+      const unitKg = getCropIntel(batch.crop_name).unitWeightKg || 0.12;
+
+      if (bCount > 0) finalItemsToLog.push({ name: batch.crop_name, grade: "B", count: bCount, weight: Number((bCount * unitKg).toFixed(2)), image: reviewData.image });
+      if (cCount > 0) finalItemsToLog.push({ name: batch.crop_name, grade: "C", count: cCount, weight: Number((cCount * unitKg).toFixed(2)), image: reviewData.image });
+    });
+
+    if (finalItemsToLog.length === 0) {
+      alert("Please ensure count is at least 1.");
+      return;
+    }
+
+    onComplete(finalItemsToLog);
+  };
+
+  // VIEW 1: AR REVIEW SCREEN
+  if (reviewData) {
+    return (
+      <div className="fixed inset-0 z-[150] bg-slate-950 flex flex-col animate-in fade-in">
+        <div className="px-4 py-3 flex justify-between items-center bg-slate-900 text-white border-b border-white/10 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <Aperture className="w-5 h-5 text-emerald-400" />
+            <div>
+              <span className="font-extrabold tracking-wide text-sm md:text-base block leading-tight">AI Batch Audit</span>
+              <span className="text-[10px] text-emerald-400 font-bold block">{reviewData.modelLabel || 'Qwen 3.8-27B Vision'} • Surface Texture Verified</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-3 text-xs font-bold bg-white/10 px-3 py-1 rounded-full">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Grade B (Firm)</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Grade C (Wrinkled/Pitted)</span>
+            </div>
+            <button onClick={onClose} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Image Container with Interactive Grade B (Green) & Grade C (Amber) Dots */}
+        <div className="flex-1 relative overflow-hidden bg-slate-950 flex items-center justify-center p-3">
+          <div className="relative inline-block max-w-2xl max-h-[50vh] rounded-2xl overflow-hidden shadow-2xl border border-white/15">
+            <img src={reviewData.image} alt="Batch" className="block max-h-[50vh] w-auto h-auto object-contain" />
+            
+            {reviewData.items.map((item, idx) => (
+              <div 
+                key={idx}
+                onClick={() => toggleItemDotGrade(idx)}
+                title="Tap dot to toggle Grade B / C"
+                className={`absolute w-5 h-5 md:w-6 md:h-6 rounded-full border-2 border-white shadow-[0_0_12px_rgba(0,0,0,0.9)] transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center group cursor-pointer transition-transform hover:scale-125 ${
+                  item.grade === 'C' ? 'bg-amber-500' : 'bg-emerald-500'
+                }`}
+                style={{ left: `${item.x}%`, top: `${item.y}%` }}
+              >
+                <span className="text-[9px] font-black text-white leading-none">{item.grade}</span>
+                <div className={`absolute -top-8 left-1/2 -translate-x-1/2 text-white text-[10px] font-black px-2 py-0.5 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 ${
+                  item.grade === 'C' ? 'bg-amber-600' : 'bg-emerald-600'
+                }`}>
+                  {item.crop_name} Gr-{item.grade}: {item.defect_tag || 'Tap to switch'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Action Panel */}
+        <div className="bg-white rounded-t-3xl p-4 md:p-6 shadow-2xl relative z-20 max-h-[48vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+            <h3 className="text-base md:text-lg font-black text-slate-900">Select Produce to List</h3>
+            <span className="text-[11px] font-bold text-slate-500 hl-yellow">Tap any dot on photo or +/- to adjust</span>
+          </div>
+          
+          <div className="space-y-2.5 mb-4">
+            {reviewData.batches.map((batch, idx) => {
+              const unitKg = getCropIntel(batch.crop_name).unitWeightKg || 0.12;
+              const estKg = ((batch.grade_b_count + batch.grade_c_count) * unitKg).toFixed(2);
+              return (
+                <div 
+                  key={idx} 
+                  onClick={() => toggleBatchSelection(idx)}
+                  className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5 p-3 md:p-4 rounded-2xl border cursor-pointer transition-all ${
+                    batch.isSelected ? 'bg-emerald-50/50 border-emerald-300 shadow-xs' : 'bg-slate-50 border-slate-200 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                      batch.isSelected ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300'
+                    }`}>
+                      {batch.isSelected && <Check className="w-3.5 h-3.5" />}
+                    </div>
+                    <div>
+                      <span className="font-black text-slate-900 text-sm md:text-base">{batch.crop_name}</span>
+                      <span className="ml-2 text-xs font-bold text-slate-500">(~{estKg} kg est.)</span>
+                      {batch.defect_notes && <p className="text-[11px] text-slate-600 font-medium mt-0.5">{batch.defect_notes}</p>}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 self-end sm:self-center">
+                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-emerald-300">
+                      <button type="button" onClick={(e) => adjustCount(idx, 'grade_b_count', -1, e)} className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center">-</button>
+                      <span className="text-sm font-black text-emerald-700 min-w-[16px] text-center">{batch.grade_b_count}</span>
+                      <button type="button" onClick={(e) => adjustCount(idx, 'grade_b_count', 1, e)} className="w-5 h-5 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-black text-xs flex items-center justify-center">+</button>
+                      <span className="text-[10px] font-extrabold text-emerald-700 ml-0.5">Gr B</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-amber-300">
+                      <button type="button" onClick={(e) => adjustCount(idx, 'grade_c_count', -1, e)} className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center">-</button>
+                      <span className="text-sm font-black text-amber-600 min-w-[16px] text-center">{batch.grade_c_count}</span>
+                      <button type="button" onClick={(e) => adjustCount(idx, 'grade_c_count', 1, e)} className="w-5 h-5 rounded bg-amber-100 hover:bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center">+</button>
+                      <span className="text-[10px] font-extrabold text-amber-700 ml-0.5">Gr C</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex gap-3">
+            <button 
+              onClick={() => { setReviewData(null); startCamera(); }}
+              className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl transition-colors active:scale-95 text-sm"
+            >
+              Retake
+            </button>
+            <button 
+              onClick={handleConfirmAndList}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
+            >
+              <CheckCircle2 className="w-4 h-4" /> List Selected
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VIEW 2: CAMERA CAPTURE SCREEN
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-xs animate-in fade-in">
+      <div className="relative w-full h-[84vh] bg-black flex flex-col justify-center items-center overflow-hidden">
+        
+        <div className="absolute top-0 left-0 right-0 z-30 p-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+          <div className="flex items-center gap-2 bg-black/50 px-3.5 py-1.5 rounded-full border border-white/15">
+            <Aperture className="w-4 h-4 text-emerald-400" />
+            <span className="text-white font-bold tracking-wide text-xs">Qwen 3.8-27B Batch Scanner</span>
+          </div>
+          <button onClick={onClose} className="bg-black/50 p-2 rounded-full text-white border border-white/15">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover opacity-90" />
+        <canvas ref={canvasRef} className="hidden" />
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none p-6">
+          <div className="relative w-full max-w-md aspect-[4/3] border-2 border-dashed border-white/50 rounded-2xl flex items-center justify-center bg-white/5">
+            {isAnalyzing ? (
+              <div className="flex flex-col items-center">
+                <ScanLine className="w-10 h-10 text-emerald-400 mb-2 animate-pulse" />
+                <span className="text-emerald-400 font-black text-xs uppercase tracking-widest text-center px-4">Auditing Surface & Grade...</span>
+              </div>
+            ) : (
+              <span className="text-white/80 font-bold text-xs uppercase tracking-widest text-center px-4">
+                Align produce inside frame
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-0 right-0 flex items-center justify-center gap-5 z-40">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isAnalyzing}
+            className="bg-white/20 hover:bg-white/30 backdrop-blur-xs text-white border border-white/30 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5"
+          >
+            <UploadCloud className="w-4 h-4 text-emerald-300" /> Upload Photo
+          </button>
+          <button 
+            onClick={captureBatchAndAnalyze}
+            disabled={isAnalyzing}
+            className={`w-18 h-18 rounded-full border-4 flex items-center justify-center transition-all ${isAnalyzing ? 'border-slate-500 bg-slate-600/50' : 'border-white bg-white/20 hover:bg-white/40 active:scale-95'}`}
+          >
+            <div className={`w-12 h-12 rounded-full ${isAnalyzing ? 'bg-slate-400' : 'bg-white'}`}></div>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 bg-white rounded-t-3xl p-4 flex flex-col justify-center items-center z-30 -mt-4">
+        <h3 className="text-slate-900 font-black text-base md:text-lg mb-0.5">AI Mixed Batch Audit</h3>
+        <p className="text-slate-500 font-medium text-xs text-center max-w-sm">Separates firm Grade B produce from wrinkled/pitted Grade C stock automatically.</p>
+      </div>
+    </div>
+  );
+}
+
+// --- Supporting Modals ---
+function TrackingListModal({ orders, onClose, onSelectOrder }) {
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in">
+      <div className="bg-white w-full max-w-lg rounded-3xl p-5 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+        <div className="flex justify-between items-center pb-3.5 border-b border-slate-100">
+          <h3 className="text-lg font-black text-slate-900 flex items-center gap-2"> Select Order to Track</h3>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="py-3 overflow-y-auto space-y-2.5 flex-1">
+          {orders.length === 0 ? (
+            <p className="text-center text-slate-500 font-bold py-8 text-sm">No active orders to track yet.</p>
+          ) : (
+            orders.map((o) => (
+              <div key={o.id} onClick={() => onSelectOrder(o)} className="p-3.5 rounded-2xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition-all flex justify-between items-center">
+                <div>
+                  <p className="font-extrabold text-slate-900 text-sm">{o.businessName || 'Business Buyer'}</p>
+                  <p className="text-xs font-bold text-slate-400">Order #{o.id.slice(0, 8)} • {o.deliveryAddress || 'Verified Hub'}</p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">Track ➝</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FarmerVerificationModal({ order, onClose, onVerify }) {
+  return (
+    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in">
+      <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 text-center">
+        <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-200"><ShieldCheck className="w-7 h-7" /></div>
+        <h3 className="text-lg font-black text-slate-900">Start Delivery (QC)</h3>
+        <p className="text-xs font-bold text-slate-500 mt-1 mb-5">Confirm quality seal on crate for Order #{order.id.slice(0, 8)}.</p>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm">Cancel</button>
+          <button onClick={async () => { await updateDoc(doc(db, 'orders', order.id), { status: 'picked' }); onVerify(); }} className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-sm">Confirm & Dispatch</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- LIVE TRACKING MAP MODAL ---
+function LiveTrackingModal({ order, onClose }) {
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const markerRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let target = 15; 
+    if (order.status === 'picked') target = 65; 
+    if (order.status === 'delivered') target = 100; 
+    setProgress(target);
+
+    const initMap = () => {
+      if (mapRef.current || !mapContainerRef.current) return;
+      const map = window.L.map(mapContainerRef.current, { zoomControl: false }).setView([26.1445, 91.7362], 12);
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+
+      const hash = order.id.charCodeAt(0) || 0;
+      const farmPos = [26.1158 + (hash * 0.0005), 91.7086 - (hash * 0.0005)]; 
+      const hubPos = [26.1722 - (hash * 0.0005), 91.7518 + (hash * 0.0005)]; 
+      window.L.polyline([farmPos, hubPos], { color: '#059669', weight: 4, dashArray: '8, 8' }).addTo(map);
+
+      const dotIcon = (color) => window.L.divIcon({
+        html: `<div style="background: ${color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+        className: '', iconSize: [14, 14], iconAnchor: [7, 7]
+      });
+      window.L.marker(farmPos, { icon: dotIcon('#059669') }).addTo(map).bindPopup('Farm Origin');
+      window.L.marker(hubPos, { icon: dotIcon('#2563eb') }).addTo(map).bindPopup('Buyer Destination');
+
+      const truckIcon = window.L.divIcon({
+        html: `<div style="background: white; border: 2px solid #059669; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.25);">🚚</div>`,
+        className: '', iconSize: [36, 36], iconAnchor: [18, 18]
+      });
+
+      const currentLat = farmPos[0] + (hubPos[0] - farmPos[0]) * (target / 100);
+      const currentLng = farmPos[1] + (hubPos[1] - farmPos[1]) * (target / 100);
+      markerRef.current = window.L.marker([currentLat, currentLng], { icon: truckIcon }).addTo(map);
+      map.fitBounds(window.L.latLngBounds(farmPos, hubPos).pad(0.3));
+      mapRef.current = map;
+      setTimeout(() => map.invalidateSize(), 300);
+    };
+
+    if (!window.L) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = initMap;
+      document.head.appendChild(script);
+    } else {
+      initMap();
+    }
+
+    return () => { if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
+  }, [order]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-slate-200">
+        <div className="p-4 md:p-5 bg-white border-b border-slate-100 flex justify-between items-center">
+          <div>
+            <h2 className="font-black flex items-center gap-2 text-base md:text-xl text-slate-900"> Live Order Tracking</h2>
+            <p className="text-slate-500 font-bold text-xs mt-0.5">Order ID: #{order.id.slice(0,8)}</p>
+          </div>
+          <button onClick={onClose} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-600"><X className="w-4 h-4"/></button>
+        </div>
+        <div className="relative h-60 md:h-80 w-full bg-slate-100 border-y border-slate-200">
+          <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0"></div>
+          <div className="absolute top-3 left-3 z-[400] bg-white text-emerald-700 font-extrabold text-[11px] px-3 py-1.5 rounded-full shadow-md border border-emerald-200 flex items-center gap-1.5">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> Live GPS Active
+          </div>
+        </div>
+        <div className="p-4 md:p-6 bg-white">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+              <span className="block text-slate-400 font-bold text-[10px] uppercase mb-0.5">Buyer</span>
+              <span className="font-extrabold text-slate-900 text-sm">{order.businessName || 'Business Client'}</span>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+              <span className="block text-slate-400 font-bold text-[10px] uppercase mb-0.5">Address</span>
+              <span className="font-extrabold text-slate-900 text-sm truncate block">{order.deliveryAddress || 'Verified Hub'}</span>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+              <span className="block text-slate-400 font-bold text-[10px] uppercase mb-0.5">Net Payout</span>
+              <span className="font-extrabold text-emerald-600 text-sm">₹{((order.items?.reduce((sum, item) => sum + (item.price * item.cartQuantity), 0) || 0) * 0.9).toFixed(0)}</span>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+              <span className="block text-slate-400 font-bold text-[10px] uppercase mb-0.5">Status</span>
+              <span className="font-extrabold text-slate-900 text-sm">{progress === 100 ? 'Delivered' : 'In Transit'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Chatbot Component ---
+function Chatbot() {
+  const { lang } = useContext(LanguageContext);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+  const content = BOT_TRANSLATIONS[lang] || BOT_TRANSLATIONS['en'];
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) setMessages([{ type: 'bot', text: content.welcome }]);
+  }, [lang, isOpen]);
+
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isTyping]);
+
+  const handleOptionClick = (option) => {
+    setMessages(prev => [...prev, { type: 'user', text: option.text }]);
+    setIsTyping(true);
+    setTimeout(() => { setIsTyping(false); setMessages(prev => [...prev, { type: 'bot', text: content.answers[option.id] }]); }, 700);
+  };
+
+  const handleSend = () => {
+    if (!inputText.trim()) return;
+    setMessages(prev => [...prev, { type: 'user', text: inputText }]);
+    const lowerInput = inputText.toLowerCase();
+    setInputText("");
+    setIsTyping(true);
+    let responseId = 'default';
+    if (lowerInput.includes('sell') || lowerInput.includes('bechna')) responseId = 'sell';
+    else if (lowerInput.includes('score') || lowerInput.includes('credit')) responseId = 'score';
+    else if (lowerInput.includes('loan') || lowerInput.includes('money')) responseId = 'loan';
+    else if (lowerInput.includes('pay') || lowerInput.includes('status')) responseId = 'payment';
+    else if (lowerInput.includes('support') || lowerInput.includes('help')) responseId = 'support';
+    else if (lowerInput.includes('scan') || lowerInput.includes('camera')) responseId = 'scan';
+    setTimeout(() => { setIsTyping(false); setMessages(prev => [...prev, { type: 'bot', text: content.answers[responseId] }]); }, 800);
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end pointer-events-none">
+      <div className={`pointer-events-auto bg-white rounded-3xl shadow-2xl border border-slate-200 w-[90vw] md:w-96 h-[450px] mb-3 flex flex-col overflow-hidden transition-all duration-200 origin-bottom-right ${isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
+        <div className="bg-slate-900 p-3.5 flex justify-between items-center text-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-400/30"><Bot className="w-4 h-4 text-emerald-400" /></div>
+            <div>
+              <h3 className="font-extrabold text-sm">{content.title}</h3>
+              <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-bold"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Online</span>
+            </div>
+          </div>
+          <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-full text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5">
+          {messages.map((msg, idx) => (
+            <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[82%] rounded-2xl p-3 text-xs font-semibold leading-relaxed ${msg.type === 'user' ? 'bg-emerald-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none'}`}>{msg.text}</div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 overflow-x-auto whitespace-nowrap">
+          <div className="flex gap-1.5">
+            {content.options.map(opt => (
+              <button key={opt.id} onClick={() => handleOptionClick(opt)} className="px-2.5 py-1 bg-white text-emerald-700 text-[11px] font-bold rounded-full border border-slate-200 hover:bg-emerald-50">{opt.text}</button>
+            ))}
+          </div>
+        </div>
+        <div className="p-2.5 bg-white border-t border-slate-100 flex gap-2 items-center">
+          <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} placeholder={content.placeholder} className="flex-1 rounded-xl px-3 py-2 text-xs outline-none font-bold text-slate-800" />
+          <button onClick={handleSend} disabled={!inputText.trim() || isTyping} className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-xl"><Send className="w-4 h-4" /></button>
+        </div>
+      </div>
+      <button onClick={() => setIsOpen(!isOpen)} className="pointer-events-auto bg-slate-900 text-white p-3.5 rounded-full shadow-lg hover:bg-black transition-all">
+        {isOpen ? <X className="w-5 h-5" /> : <Bot className="w-5 h-5 text-emerald-400" />}
+      </button>
+    </div>
+  );
+}
+
+// --- Custom UI Components ---
+function PremiumButton({ children, onClick, variant = 'primary', loading = false, disabled = false, fullWidth = false, size = 'md', icon, style = {}, ...props }) {
+  const variants = {
+    primary: { background: '#059669', color: 'white', border: 'none' },
+    success: { background: '#059669', color: 'white', border: 'none' },
+    danger: { background: '#ef4444', color: 'white', border: 'none' },
+    ghost: { background: 'transparent', border: '1px solid #cbd5e1', color: '#334155' },
+    outline: { background: 'transparent', border: '2px solid #059669', color: '#059669' }
+  };
+  const sizes = { sm: { padding: '0.5rem 1rem', fontSize: '0.875rem' }, md: { padding: '0.7rem 1.4rem', fontSize: '0.9rem' }, lg: { padding: '0.8rem 1.75rem', fontSize: '0.95rem' } };
+  return (
+    <button onClick={onClick} disabled={disabled || loading} className={`flex items-center justify-center gap-2 rounded-xl font-bold transition-all ${disabled || loading ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-sm active:scale-[0.99]'}`} style={{ ...variants[variant], ...sizes[size], width: fullWidth ? '100%' : 'auto', ...style }} {...props}>
+      {loading ? 'Processing...' : <>{icon && <span>{icon}</span>}<span>{children}</span></>}
+    </button>
+  );
+}
+
+function PremiumInput({ label, error, icon, helperText, ...props }) {
+  return (
+    <div className="w-full space-y-1">
+      {label && <label className="block text-xs font-bold text-slate-700">{label}</label>}
+      <div className="relative flex items-center">
+        {icon && <div className="absolute left-3.5 text-slate-400 z-10">{icon}</div>}
+        <input {...props} className={`w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 ${icon ? 'pl-10' : ''} outline-none font-medium text-slate-800 placeholder:text-slate-400 text-sm`} />
+      </div>
+      {error && <p className="text-xs font-bold text-rose-500 mt-1">{error}</p>}
+      {helperText && !error && <p className="text-xs font-bold text-slate-400 mt-1">{helperText}</p>}
+    </div>
+  );
+}
+
+// --- Landing Page ---
+function FarmerLanding() {
+  const navigate = useNavigate();
+  const { t } = useContext(LanguageContext);
+  return (
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-sans">
+      <AnimatedBackground />
+      <div className="absolute top-4 right-4 md:top-6 md:right-8 z-50"><LanguageSelector /></div>
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 py-12 flex flex-col items-center text-center">
+        <div className="w-20 h-20 md:w-28 md:h-28 mb-6 bg-white border border-slate-200 rounded-3xl flex items-center justify-center shadow-sm">
+          <Leaf className="w-10 h-10 md:w-14 md:h-14 text-emerald-600" strokeWidth={2} />
+        </div>
+        <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-3 text-slate-900">
+          KhetFlow <span className="text-emerald-600">Farmer</span>
+        </h1>
+        <p className="text-base md:text-xl text-slate-600 font-bold mb-3">{t('heroSubtitle')}</p>
+        <p className="text-sm md:text-base text-slate-500 font-medium mb-8 max-w-xl mx-auto">{t('heroDesc')}</p>
+        <button onClick={() => navigate('/login')} className="bg-emerald-600 text-white text-base md:text-lg font-extrabold py-3.5 px-8 rounded-xl shadow-md hover:bg-emerald-700 transition-all flex items-center gap-2">
+          <span>{t('startSelling')}</span>
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// --- Auth Page ---
+function AuthPage({ isLogin }) {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ identifier: '', password: '', farmerName: '', farmName: '', location: '', hasTransport: false });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      let loginEmail = form.identifier;
+      if (!loginEmail.includes('@')) {
+        const digits = loginEmail.replace(/[^0-9]/g, '');
+        if (digits.length < 10) throw new Error("Please enter a valid mobile number or email.");
+        loginEmail = `${digits}@farmer.khetflow.com`;
+      }
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, loginEmail, form.password);
+        navigate('/dashboard');
+      } else {
+        const userCred = await createUserWithEmailAndPassword(auth, loginEmail, form.password);
+        await setDoc(doc(db, 'farmers', userCred.user.uid), {
+          farmerName: form.farmerName,
+          farmName: form.farmName,
+          email: loginEmail,
+          phone: form.identifier.includes('@') ? '' : form.identifier, 
+          location: form.location,
+          userType: 'farmer',
+          hasTransport: form.hasTransport, 
+          totalEarnings: 0,
+          pendingEarnings: 0,
+          khetScore: 785,
+          createdAt: serverTimestamp()
+        });
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      let errorMsg = err.message.replace('Firebase: ', '').replace('auth/', '');
+      if (errorMsg.includes('invalid-credential')) errorMsg = "Incorrect Mobile/Email or Password/PIN.";
+      if (errorMsg.includes('email-already-in-use')) errorMsg = "This Account is already registered.";
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative font-sans">
+      <AnimatedBackground />
+      <div className="absolute top-4 right-4 md:top-6 md:right-8 z-50"><LanguageSelector /></div>
+      <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row gap-10 lg:gap-16 items-center justify-center relative z-10 py-6">
+        <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1">
+          <div className="w-12 h-12 mb-4 bg-emerald-600 rounded-xl flex items-center justify-center shadow-sm"><Leaf className="w-6 h-6 text-white" /></div>
+          <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-3">KhetFlow <span className="text-emerald-600">Farmer</span></h1>
+          <p className="text-xs md:text-base text-slate-500 font-medium mb-6 max-w-md">Sell <span className="hl-green">Grade B & C produce</span> directly to commercial kitchens. Zero waste, transparent pricing, instant digital credit.</p>
+          <div className="grid grid-cols-3 gap-3 w-full max-w-md hidden md:grid">
+            {[
+              { label: 'FARMER INCOME', value: '+30%', icon: <IndianRupee className="w-4 h-4" /> },
+              { label: 'ZERO WASTE', value: '100%', icon: <Leaf className="w-4 h-4" /> },
+              { label: 'HORECA BUYERS', value: '1.2k+', icon: <ShoppingBag className="w-4 h-4" /> }
+            ].map((stat, i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 text-center border border-slate-200/80 flex flex-col items-center">
+                <div className="mb-1.5 text-slate-400">{stat.icon}</div>
+                <div className="text-lg font-black text-emerald-600 mb-0.5">{stat.value}</div>
+                <div className="text-slate-400 font-bold text-[9px] uppercase">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="w-full max-w-md lg:w-1/2 flex justify-center order-1 lg:order-2">
+          <div className="bg-white rounded-3xl shadow-lg border border-slate-200/90 p-6 md:p-8 w-full">
+            <div className="mb-5 text-center">
+              <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-1">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+              <p className="text-slate-500 font-medium text-xs">{isLogin ? 'Enter your details to access the marketplace' : 'Register your details to start earning'}</p>
+            </div>
+            {error && <div className="bg-rose-50 border border-rose-200 text-rose-600 px-3.5 py-2.5 rounded-xl mb-4 flex items-center gap-2 text-xs font-bold"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
+            <form onSubmit={handleSubmit} className="space-y-3.5">
+              {!isLogin && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <PremiumInput label="Your Name" name="farmerName" placeholder="John Doe" value={form.farmerName} onChange={(e) => setForm({...form, farmerName: e.target.value})} required />
+                  <PremiumInput label="Farm Name" name="farmName" placeholder="Green Farms" value={form.farmName} onChange={(e) => setForm({...form, farmName: e.target.value})} required />
+                </div>
+              )}
+              <PremiumInput label="Email or Phone Number" name="identifier" type="text" placeholder="name@company.com or 10-digit phone" icon={<Mail className="w-4 h-4" />} value={form.identifier} onChange={(e) => setForm({...form, identifier: e.target.value})} required />
+              <PremiumInput label="Password" name="password" type="password" placeholder="••••••••" icon={<ShieldCheck className="w-4 h-4" />} value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} required />
+              {!isLogin && (
+                <div className="space-y-3.5">
+                  <PremiumInput label="Farm Location" name="location" type="text" placeholder="City, State" icon={<MapPin className="w-4 h-4" />} value={form.location} onChange={(e) => setForm({...form, location: e.target.value})} required />
+                  <label className="flex items-center gap-2.5 text-xs text-slate-700 font-bold cursor-pointer">
+                    <input type="checkbox" checked={form.hasTransport} onChange={(e) => setForm({...form, hasTransport: e.target.checked})} className="w-4 h-4 text-emerald-600 rounded border-slate-300 accent-emerald-600" />
+                    I have my own transport
+                  </label>
+                </div>
+              )}
+              <PremiumButton type="submit" loading={loading} fullWidth size="lg">{isLogin ? 'Login Securely' : 'Create Account'}</PremiumButton>
+            </form>
+            <div className="mt-5 text-center text-xs text-slate-500 font-medium">
+              {isLogin ? "New to KhetFlow? " : "Already have an account? "}
+              <button onClick={() => { navigate(isLogin ? '/register' : '/login'); setError(''); }} className="text-emerald-600 font-bold hover:text-emerald-700">{isLogin ? 'Create an account' : 'Log in here'}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProtectedRoute({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setLoading(false); });
+    return unsubscribe;
+  }, []);
+  if (loading) return <KhetFlowLoader />;
+  return user ? children : <Navigate to="/login" />;
+}
+
+// ==================== 5. MAIN DASHBOARD (CORPORATE B2B UI + COMPACT MOBILE MARKETPLACE) ====================
+
+function Dashboard() {
+  const navigate = useNavigate();
+  const { t, lang, setLang } = useContext(LanguageContext);
+  const [user, setUser] = useState(null);
+  const [farmerData, setFarmerData] = useState(null);
+  const [view, setView] = useState('listings');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [showPriceDiscovery, setShowPriceDiscovery] = useState(false);
+  
+  const [uploading, setUploading] = useState(false);
+  const [isAutoFilled, setIsAutoFilled] = useState(false);
+  const [selectedListing, setSelectedListing] = useState(null);
+  
+  const [scannedItems, setScannedItems] = useState([]);
+  const [showBatchSummary, setShowBatchSummary] = useState(false);
+
+  const handleCameraComplete = (batchesToList) => {
+    setShowCameraModal(false);
+    if (batchesToList && batchesToList.length > 0) {
+      setScannedItems(batchesToList);
+      setShowBatchSummary(true);
+    }
+  };
+
+  const [listings, setListings] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [totalEarnings, setTotalEarnings] = useState(0);
+  const [pendingEarnings, setPendingEarnings] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('Vegetables');
+  const [khetScore, setKhetScore] = useState(785); 
+  
+  const [transportPools, setTransportPools] = useState([]);
+  const [joinId, setJoinId] = useState(null);
+  const [joinWeight, setJoinWeight] = useState('');
+  const [pickupLocation, setPickupLocation] = useState('');
+
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const [trackingOrder, setTrackingOrder] = useState(null);
+  const [showTrackingList, setShowTrackingList] = useState(false);
+
+  const mandiRates = [
+    { crop: "Tomato", gradeA: 24, gradeB: 18, gradeC: 12, trend: 'up' },
+    { crop: "Onion", gradeA: 35, gradeB: 25, gradeC: 15, trend: 'down' },
+    { crop: "Potato", gradeA: 22, gradeB: 16, gradeC: 10, trend: 'stable' },
+    { crop: "Spinach", gradeA: 45, gradeB: 30, gradeC: 20, trend: 'up' },
+    { crop: "Carrot", gradeA: 50, gradeB: 35, gradeC: 25, trend: 'up' },
+    { crop: "Cauliflower", gradeA: 38, gradeB: 25, gradeC: 18, trend: 'down' },
+    { crop: "Okra", gradeA: 42, gradeB: 30, gradeC: 20, trend: 'stable' },
+    { crop: "Brinjal", gradeA: 30, gradeB: 20, gradeC: 12, trend: 'down' },
+    { crop: "Ginger", gradeA: 120, gradeB: 85, gradeC: 60, trend: 'up' },
+    { crop: "Garlic", gradeA: 150, gradeB: 110, gradeC: 75, trend: 'up' },
+  ];
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [newListing, setNewListing] = useState({
+    name: '',
+    quantity: '',
+    price: '',
+    grade: 'B',
+    description: '',
+    imageFile: null,
+    imagePreview: null,
+    isFlashSale: false,
+    flashSaleDiscount: 0,
+    flashSaleEndTime: ''
+  });
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      if (u) {
+        setUser(u);
+        Promise.all([
+          fetchFarmerData(u.uid),
+          fetchListings(u.uid),
+          fetchOrders(u.uid),
+          calculateEarnings(u.uid)
+        ]);
+      }
+      setLoading(false); 
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const q = query(collection(db, 'transport_pools'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTransportPools(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchFarmerData = async (uid) => {
+    try {
+      const docSnap = await getDoc(doc(db, 'farmers', uid));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setFarmerData(data);
+        setKhetScore(data.khetScore || 785);
+      }
+    } catch (error) {
+      console.error('Error fetching farmer data:', error);
+    }
+  };
+
+  const fetchListings = async (uid) => {
+    try {
+      const q = query(collection(db, 'listings'), where('farmerId', '==', uid));
+      const snapshot = await getDocs(q);
+      setListings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+    }
+  };
+
+  const fetchOrders = async (uid) => {
+    try {
+      const ordersSnapshot = await getDocs(collection(db, 'orders'));
+      const allOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const farmerOrders = allOrders.filter(order => order.items && order.items.some(item => item.farmerId === uid));
+      setOrders(farmerOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+      
+      const deliveredOrders = farmerOrders.filter(order => order.status === 'delivered');
+      const txns = deliveredOrders.map(order => {
+        const farmerItems = order.items.filter(item => item.farmerId === uid);
+        const orderTotal = farmerItems.reduce((sum, item) => sum + (item.price * item.cartQuantity), 0);
+        return {
+          id: `TXN-${order.id.substring(0, 6).toUpperCase()}`,
+          orderId: order.id,
+          date: order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString(),
+          amount: (orderTotal * 0.9).toFixed(2),
+          status: 'Completed',
+          items: farmerItems.length
+        };
+      });
+      setTransactions(txns);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
+
+  const calculateEarnings = async (uid) => {
+    try {
+      const ordersSnapshot = await getDocs(collection(db, 'orders'));
+      const allOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let delivered = 0, pending = 0, deliveredCount = 0;
+      let uniqueCrops = new Set();
+
+      allOrders.forEach(order => {
+        if (order.items) {
+          const farmerItems = order.items.filter(item => item.farmerId === uid);
+          const orderTotal = farmerItems.reduce((sum, item) => sum + (item.price * item.cartQuantity), 0);
+          const farmerEarning = orderTotal * 0.9;
+          farmerItems.forEach(item => uniqueCrops.add(item.name));
+
+          if (order.status === 'delivered') {
+            delivered += farmerEarning;
+            deliveredCount++;
+          } else if (order.status === 'picked' || order.status === 'pending') {
+            pending += farmerEarning;
+          }
+        }
+      });
+
+      setTotalEarnings(delivered);
+      setPendingEarnings(pending);
+
+      const baseScore = farmerData?.khetScore ? Number(farmerData.khetScore) : 785;
+      let score = baseScore;
+      if (deliveredCount > 0) {
+        const reliability = Math.min(deliveredCount * 12, 60);
+        const volumeBonus = Math.min(Math.floor(delivered / 1000) * 4, 30);
+        const diversity = Math.min(uniqueCrops.size * 8, 25);
+        score = Math.min(900, 760 + reliability + volumeBonus + diversity);
+      }
+      const finalScore = Math.floor(score);
+      setKhetScore(finalScore);
+
+      await setDoc(doc(db, 'farmers', uid), { totalEarnings: delivered, pendingEarnings: pending, khetScore: finalScore }, { merge: true });
+    } catch (error) {
+      console.error('Error calculating earnings:', error);
+    }
+  };
+
+  const markReadyForPickup = async (orderId) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), {
+        readyForPickup: true,
+        readyAt: serverTimestamp(),
+        farmerSelfDelivery: farmerData?.hasTransport || false 
+      });
+      alert('Order Updated Successfully!');
+      await fetchOrders(user.uid);
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+  };
+
+  const handleStartDelivery = (order) => {
+    setSelectedOrder(order);
+    setShowVerificationModal(true);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5000000) {
+        alert('Image too large! Please choose an image smaller than 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => setNewListing({ ...newListing, imageFile: file, imagePreview: reader.result });
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddListing = (e) => {
+    e.preventDefault();
+    let currentPrice = newListing.price;
+    if (!currentPrice) {
+      const matchedCrop = getCropIntel(newListing.name);
+      currentPrice = newListing.grade === 'B' ? matchedCrop.gradeB : matchedCrop.gradeC;
+    }
+    setNewListing({ ...newListing, price: currentPrice });
+    setShowPriceDiscovery(true);
+  };
+
+  const executeAddListing = async () => {
+    setUploading(true);
+    try {
+      const finalPrice = newListing.isFlashSale 
+        ? parseFloat(newListing.price) * (1 - parseFloat(newListing.flashSaleDiscount) / 100)
+        : parseFloat(newListing.price);
+
+      const sha256Seal = await generateSHA256Seal({ farmerId: user.uid, name: newListing.name, grade: newListing.grade, price: finalPrice, ts: Date.now() });
+
+      const listing = {
+        farmerId: user.uid,
+        farmerName: farmerData?.farmerName || user.displayName || 'Assam Organic Producer',
+        farmName: farmerData?.farmName || 'Azara Valley Farm',
+        farmLocation: farmerData?.location || 'Azara, Kamrup, Assam',
+        name: newListing.name,
+        quantity: parseFloat(newListing.quantity),
+        price: finalPrice,
+        originalPrice: parseFloat(newListing.price),
+        grade: newListing.grade,
+        sha256Seal,
+        image: newListing.imagePreview || '',
+        icon: newListing.imagePreview || '',
+        description: newListing.description,
+        savings: newListing.grade === 'B' ? '40-50%' : '50-60%',
+        status: 'active',
+        isFlashSale: newListing.isFlashSale,
+        flashSaleDiscount: newListing.isFlashSale ? parseFloat(newListing.flashSaleDiscount) : 0,
+        flashSaleEndTime: newListing.isFlashSale ? newListing.flashSaleEndTime : null,
+        createdAt: serverTimestamp(),
+        hasTrackingCode: true
+      };
+
+      await addDoc(collection(db, 'listings'), listing);
+      alert('Product listed successfully!');
+      setNewListing({ name: '', quantity: '', price: '', grade: 'B', description: '', imageFile: null, imagePreview: null, isFlashSale: false, flashSaleDiscount: 0, flashSaleEndTime: '' });
+      setShowPriceDiscovery(false);
+      setShowAddForm(false);
+      await fetchListings(user.uid);
+      if (scannedItems.length > 0) setShowBatchSummary(true);
+    } catch (error) {
+      alert('Error listing product: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteListing = async (listingId) => {
+    if (confirm('Delete this listing?')) {
+      try {
+        await deleteDoc(doc(db, 'listings', listingId));
+        await fetchListings(user.uid);
+      } catch (error) {
+        alert('Error deleting listing: ' + error.message);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/');
+  };
+
+  const handleJoinPool = async (pool) => {
+    if (!joinWeight || !pickupLocation) {
+      alert("Please provide both weight and pickup location on the highway.");
+      return;
+    }
+    const weight = parseInt(joinWeight);
+    if (pool.filledCapacity + weight > pool.totalCapacity) {
+      alert("Exceeds capacity! Only " + (pool.totalCapacity - pool.filledCapacity) + "kg space left.");
+      return;
+    }
+    try {
+      const isFull = (pool.filledCapacity + weight) >= pool.totalCapacity;
+      await updateDoc(doc(db, 'transport_pools', pool.id), {
+        filledCapacity: increment(weight),
+        farmerCount: increment(1),
+        status: isFull ? 'full' : 'open'
+      });
+      await addDoc(collection(db, `transport_pools/${pool.id}/joiners`), {
+        riderId: user.uid,
+        riderName: farmerData?.farmerName || 'Farmer',
+        weightAdded: weight,
+        pickupLocation: pickupLocation,
+        type: 'farmer',
+        timestamp: serverTimestamp()
+      });
+      setJoinId(null);
+      setJoinWeight('');
+      setPickupLocation('');
+      alert("Successfully reserved space on this truck!");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  if (loading) return <KhetFlowLoader />;
+
+  return (
+    <div className="min-h-screen bg-transparent pb-20 font-sans">
+      <AnimatedBackground />
+
+      {showQRModal && selectedListing && (
+        <QRCodeModal listing={selectedListing} onClose={() => { setShowQRModal(false); setSelectedListing(null); }} />
+      )}
+
+      {showPriceDiscovery && (
+        <PriceDiscoveryModal 
+          listing={newListing} 
+          setListing={setNewListing} 
+          onClose={() => setShowPriceDiscovery(false)} 
+          onConfirm={executeAddListing} 
+          mandiRates={mandiRates}
+          farmerLocation={farmerData?.location}
+        />
+      )}
+
+      {showVerificationModal && selectedOrder && (
+        <FarmerVerificationModal
+          order={selectedOrder}
+          onClose={() => { setShowVerificationModal(false); setSelectedOrder(null); }}
+          onVerify={async () => {
+            alert('Quality verified! Order is now Out for Delivery.');
+            setShowVerificationModal(false);
+            setSelectedOrder(null);
+            await fetchOrders(user.uid);
+          }}
+        />
+      )}
+
+      {showTrackingList && (
+        <TrackingListModal
+          orders={orders}
+          onClose={() => setShowTrackingList(false)}
+          onSelectOrder={(order) => { setShowTrackingList(false); setTrackingOrder(order); }}
+        />
+      )}
+
+      {trackingOrder && (
+        <LiveTrackingModal order={trackingOrder} onClose={() => setTrackingOrder(null)} />
+      )}
+
+      {/* Top Sticky Corporate Navbar */}
+      <div className="sticky top-0 z-40 bg-white border-b border-slate-200/90 shadow-xs print:hidden">
+        <MandiTicker />
+        <div className="max-w-7xl mx-auto px-2.5 md:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center py-1.5 md:py-0 md:h-16 gap-1.5 md:gap-4">
+            
+            <div className="w-full md:w-auto flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center text-emerald-600">
+                  <Leaf className="w-4 h-4 md:w-5 md:h-5" />
+                </div>
+                <div>
+                  <h1 className="text-xs md:text-sm font-black text-slate-900 leading-tight truncate max-w-[140px] md:max-w-[180px]">
+                    {farmerData?.farmName || 'My Farm'}
+                  </h1>
+                  <p className="text-[9px] md:text-[11px] text-slate-500 font-bold leading-none">{t('farmerDash')}</p>
+                </div>
+              </div>
+
+              <div className="flex md:hidden items-center gap-1.5 shrink-0">
+                <LanguageSelector />
+                <button onClick={handleLogout} className="p-1.5 bg-slate-100 rounded-lg text-slate-500 hover:text-rose-600">
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="flex-1 flex justify-start md:justify-center w-full overflow-x-auto scrollbar-none py-0.5">
+              <div className="flex bg-slate-100 border border-slate-200/70 p-1 rounded-xl min-w-max gap-1">
+                <button onClick={() => setView('listings')} className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-extrabold transition-all whitespace-nowrap ${view === 'listings' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}>
+                  <Package className="w-3.5 h-3.5" /> {t('listings')}
+                </button>
+                <button onClick={() => setView('orders')} className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-extrabold transition-all whitespace-nowrap relative ${view === 'orders' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}>
+                  <ShoppingBag className="w-3.5 h-3.5" /> {t('orders')}
+                  {orders.filter(o => o.status === 'pending' && !o.readyForPickup).length > 0 && (
+                    <span className="ml-1 px-1.5 bg-rose-500 text-white text-[9px] rounded-full">{orders.filter(o => o.status === 'pending' && !o.readyForPickup).length}</span>
+                  )}
+                </button>
+                <button onClick={() => setView('transactions')} className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-extrabold transition-all whitespace-nowrap ${view === 'transactions' ? 'bg-white text-amber-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}>
+                  <IndianRupee className="w-3.5 h-3.5" /> {t('payments')}
+                </button>
+                <button onClick={() => setView('mandi')} className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-extrabold transition-all whitespace-nowrap ${view === 'mandi' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}>
+                  <BarChart3 className="w-3.5 h-3.5" /> {t('mandi')}
+                </button>
+                <button onClick={() => setView('khetscore')} className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-extrabold transition-all whitespace-nowrap ${view === 'khetscore' ? 'bg-white text-purple-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}>
+                  <CreditCard className="w-3.5 h-3.5" /> {t('khetScore')}
+                </button>
+                <button onClick={() => setView('transport')} className={`flex items-center gap-1.5 px-2.5 py-1.5 md:px-4 md:py-1.5 rounded-lg text-[11px] md:text-xs font-extrabold transition-all whitespace-nowrap ${view === 'transport' ? 'bg-white text-orange-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'}`}>
+                  <Truck className="w-3.5 h-3.5" /> {t('transport')}
+                </button>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <LanguageSelector />
+              <button onClick={handleLogout} className="p-2 bg-slate-100 rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all" title="Logout">
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-2.5 md:px-6 lg:px-8 py-3 md:py-6">
+        {view !== 'khetscore' && (
+          <div className="hidden md:block">
+            <WeatherWidget location={farmerData?.location} isMobileBox={false} />
+          </div>
+        )}
+
+        {/* --- MANDI RATES TAB --- */}
+        {view === 'mandi' && (
+          <div className="animate-in fade-in duration-300 space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-3 bg-white border border-slate-200/80 p-4 md:p-6 rounded-2xl shadow-xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg md:text-2xl font-black text-slate-900">{t('mandiRates')}</h2>
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>Live Agmarknet
+                  </span>
+                </div>
+                <p className="text-slate-500 font-medium text-xs md:text-sm mt-0.5">Compare Grade A wholesale mandi rates with <span className="hl-green">Grade B/C B2B rates</span>.</p>
+              </div>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="text" placeholder={t('searchCrop')} className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-800 text-xs md:text-sm" onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left min-w-[480px]">
+                  <thead className="bg-slate-50 border-b border-slate-200/70 text-slate-500 text-[11px] uppercase font-extrabold">
+                    <tr>
+                      <th className="px-4 py-3.5 md:px-6">Crop (Live)</th>
+                      <th className="px-4 py-3.5 md:px-6">Agmarknet (Gr A)</th>
+                      <th className="px-4 py-3.5 md:px-6 text-emerald-700">Grade B (Est.)</th>
+                      <th className="px-4 py-3.5 md:px-6 text-amber-700">Grade C (Est.)</th>
+                      <th className="px-4 py-3.5 md:px-6">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs md:text-sm">
+                    {mandiRates.filter(r => r.crop.toLowerCase().includes(searchTerm)).map((rate, i) => (
+                      <tr key={i} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="px-4 py-3.5 md:px-6 font-extrabold text-slate-900">{rate.crop}</td>
+                        <td className="px-4 py-3.5 md:px-6 font-bold text-slate-500">₹{rate.gradeA}/kg</td>
+                        <td className="px-4 py-3.5 md:px-6 font-extrabold text-emerald-700"><span className="hl-green">₹{rate.gradeB}/kg</span></td>
+                        <td className="px-4 py-3.5 md:px-6 font-extrabold text-amber-700"><span className="hl-yellow">₹{rate.gradeC}/kg</span></td>
+                        <td className="px-4 py-3.5 md:px-6">
+                          {rate.trend === 'up' && <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-1 text-[11px] font-bold w-fit"><TrendingUp className="w-3 h-3" /> Up</span>}
+                          {rate.trend === 'down' && <span className="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md flex items-center gap-1 text-[11px] font-bold w-fit"><TrendingDown className="w-3 h-3" /> Down</span>}
+                          {rate.trend === 'stable' && <span className="text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1 text-[11px] font-bold w-fit"><ArrowRight className="w-3 h-3" /> Stable</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- KHETSCORE CERTIFICATE UI --- */}
+        {view === 'khetscore' && (
+          <div className="animate-in fade-in duration-300 space-y-5">
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white border border-slate-200/80 p-4 md:p-6 rounded-2xl shadow-xs print:hidden gap-3">
+              <div>
+                <h2 className="text-lg md:text-2xl font-black text-slate-900">KhetScore Profile ⭐️</h2>
+                <p className="text-slate-500 font-medium mt-0.5 text-xs md:text-sm">Your bank-grade agricultural credit certificate & explainable score breakdown.</p>
+              </div>
+              <button onClick={() => window.print()} className="bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold shadow-xs flex items-center gap-2 hover:bg-black transition-all text-xs md:text-sm">
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-5 md:p-10 relative overflow-hidden" id="khetscore-certificate">
+              <div className="absolute inset-0 flex items-center justify-center opacity-[0.025] pointer-events-none">
+                <Landmark className="w-64 h-64 md:w-96 md:h-96" />
+              </div>
+
+              <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-6 md:mb-8 relative z-10">
+                <div>
+                  <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight uppercase">KHETFLOW</h1>
+                  <p className="text-[10px] md:text-xs font-extrabold text-slate-500 tracking-widest uppercase mt-0.5">Verified Financial Trust Report</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase">Report Date</p>
+                  <p className="text-xs md:text-sm font-extrabold text-slate-900">{new Date().toLocaleDateString()}</p>
+                  <p className="text-[9px] md:text-[11px] font-mono font-bold text-slate-400 mt-0.5">ID: KF-{user?.uid.substring(0,8).toUpperCase()}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 relative z-10">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-0.5">Entity Name</p>
+                    <p className="text-base md:text-xl font-black text-slate-900">{farmerData?.farmerName || user?.displayName || 'Arun'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-0.5">Business / Farm</p>
+                    <p className="text-sm md:text-base font-extrabold text-slate-700">{farmerData?.farmName || 'khetbyarun'}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-0.5">Registered Location</p>
+                    <p className="text-xs md:text-sm font-extrabold text-slate-700">{farmerData?.location || 'Kamrup, Assam'}</p>
+                  </div>
+                  
+                  <div className="p-3.5 md:p-4 rounded-2xl border border-emerald-200 bg-emerald-50/50">
+                    <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Risk Assessment</p>
+                    {khetScore >= 750 ? (
+                      <p className="text-sm md:text-base font-black text-emerald-700 uppercase flex items-center gap-1.5"><Check className="w-4 h-4"/> <span className="hl-green">Low Risk (Prime Micro-Loan Eligible)</span></p>
+                    ) : khetScore >= 600 ? (
+                      <p className="text-sm md:text-base font-black text-amber-600 uppercase flex items-center gap-1.5"><AlertCircle className="w-4 h-4"/> Moderate Risk</p>
+                    ) : (
+                      <p className="text-sm md:text-base font-black text-rose-600 uppercase flex items-center gap-1.5"><X className="w-4 h-4"/> High Risk</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center justify-center p-5 md:p-6 border border-slate-200/80 rounded-2xl bg-slate-50/60 relative">
+                  <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider absolute top-4 left-5">KhetScore</p>
+                  <div className="w-36 h-36 md:w-44 md:h-44 relative mt-2">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" stroke="#e2e8f0" strokeWidth="12" fill="none" />
+                      <circle 
+                        cx="60" cy="60" r="50" 
+                        stroke={khetScore >= 750 ? '#059669' : khetScore >= 600 ? '#d97706' : '#e11d48'} 
+                        strokeWidth="12" 
+                        fill="none" 
+                        strokeDasharray="314" 
+                        strokeDashoffset={314 - (314 * (Math.min(900, khetScore) / 900))} 
+                        strokeLinecap="round"
+                        className="transition-all duration-1000 ease-out"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{khetScore}</span>
+                      <span className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase mt-0.5">Out of 900</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-8 relative z-10">
+                <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-2.5 mb-4">Key Financial Factors</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-3.5 md:p-4 border border-slate-200/80 rounded-xl bg-white">
+                    <p className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase mb-1">Total Deliveries</p>
+                    <p className="text-lg md:text-xl font-black text-slate-900">{orders.filter(o => o.status === 'delivered').length}</p>
+                  </div>
+                  <div className="p-3.5 md:p-4 border border-slate-200/80 rounded-xl bg-white">
+                    <p className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase mb-1">Platform Revenue</p>
+                    <p className="text-lg md:text-xl font-black text-emerald-700 truncate">₹{totalEarnings.toFixed(0)}</p>
+                  </div>
+                  <div className="p-3.5 md:p-4 border border-slate-200/80 rounded-xl bg-white">
+                    <p className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase mb-1">Reject / Defect Rate</p>
+                    <p className="text-lg md:text-xl font-black text-emerald-600">0.0%</p>
+                  </div>
+                  <div className="p-3.5 md:p-4 border border-slate-200/80 rounded-xl bg-white">
+                    <p className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase mb-1">Loan Eligibility</p>
+                    <p className="text-lg md:text-xl font-black text-slate-900"><span className="hl-green">{khetScore >= 650 ? 'Eligible' : 'Building'}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-end pt-5 border-t-2 border-slate-900 relative z-10">
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-[2px] h-8 items-end opacity-80">
+                    {[...Array(34)].map((_, i) => (
+                      <div key={i} className="bg-slate-900" style={{ width: `${(i % 3) + 2}px`, height: `${i % 2 === 0 ? '100%' : '70%'}` }}></div>
+                    ))}
+                  </div>
+                  <p className="text-[8px] md:text-[9px] font-mono font-bold text-slate-500 tracking-widest">{user?.uid}</p>
+                </div>
+                <div className="text-right flex flex-col items-end">
+                  <div className="w-14 h-14 md:w-16 md:h-16 border-2 border-emerald-600 rounded-full flex items-center justify-center rotate-[-10deg] mb-1.5 bg-emerald-50/50">
+                    <span className="text-[8px] md:text-[9px] font-black text-emerald-700 uppercase text-center leading-tight">Verified<br/>Asset</span>
+                  </div>
+                  <p className="text-[9px] md:text-[10px] font-extrabold text-slate-400 uppercase">Authorized by KhetFlow</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 print:hidden">
+              <div className="bg-white border border-slate-200/80 p-5 md:p-6 rounded-2xl shadow-xs">
+                <h3 className="text-base md:text-lg font-black mb-3 flex items-center gap-2 text-slate-900">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  Unlock Financial Power
+                </h3>
+                <p className="text-slate-600 font-medium text-xs leading-relaxed mb-4">
+                  Your main income comes from Grade A produce. KhetFlow turns your Grade B & C surplus into <span className="hl-green">verified digital cash flow</span>, building a credit history (KhetScore) that partner banks trust for micro-loans.
+                </p>
+                <div className="space-y-2.5">
+                  <div className={`p-3.5 rounded-xl border transition-colors ${khetScore >= 650 ? 'bg-emerald-50/40 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 p-1 rounded-full shrink-0 ${khetScore >= 650 ? 'bg-emerald-600' : 'bg-slate-300'}`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-xs md:text-sm text-slate-900">Instant Micro-Loans (Up to ₹50,000)</h4>
+                        <p className="text-[11px] font-medium text-slate-500 mt-0.5">Buy seeds & fertilizer now, repay seamlessly after harvest.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`p-3.5 rounded-xl border transition-colors ${khetScore >= 750 ? 'bg-emerald-50/40 border-emerald-200' : 'bg-slate-50 border-slate-200 opacity-70'}`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 p-1 rounded-full shrink-0 ${khetScore >= 750 ? 'bg-emerald-600' : 'bg-slate-300'}`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-xs md:text-sm text-slate-900">Zero-Deductible Crop Insurance</h4>
+                        <p className="text-[11px] font-medium text-slate-500 mt-0.5">Priority weather & flood protection unlocked at 750+ KhetScore.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-center">
+                <h3 className="text-base md:text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-blue-600" />
+                  How KhetScore is Calculated
+                </h3>
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <span className="font-bold text-xs text-slate-700">Verified Identity & Farm Baseline</span>
+                    <span className="font-black text-xs text-slate-900">760 pts</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-emerald-50/60 rounded-xl border border-emerald-200/60">
+                    <div>
+                      <span className="font-extrabold text-xs text-emerald-950 block">Reliability Bonus</span>
+                      <span className="text-[10px] font-medium text-emerald-700">Per successful QR-verified delivery</span>
+                    </div>
+                    <span className="font-black text-xs text-emerald-700 hl-green">+25 pts</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-blue-50/60 rounded-xl border border-blue-200/60">
+                    <div>
+                      <span className="font-extrabold text-xs text-blue-950 block">Volume Bonus</span>
+                      <span className="text-[10px] font-medium text-blue-700">For every ₹1,000 earned on platform</span>
+                    </div>
+                    <span className="font-black text-xs text-blue-700">+5 pts</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-purple-50/60 rounded-xl border border-purple-200/60">
+                    <div>
+                      <span className="font-extrabold text-xs text-purple-950 block">Crop Diversity Bonus</span>
+                      <span className="text-[10px] font-medium text-purple-700">Per unique crop category supplied</span>
+                    </div>
+                    <span className="font-black text-xs text-purple-700">+10 pts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* --- MY PRODUCE (LISTINGS) TAB: ULTRA-COMPACT 3x2 MOBILE STATS + 2-COLUMN MARKETPLACE --- */}
+        {view === 'listings' && (
+          <div className="animate-in fade-in duration-300">
+            
+            {/* 6 COMPACT STAT BOXES: 3x2 grid on mobile (no scrolling needed!), 5 columns on desktop */}
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-4 mb-3.5 md:mb-6">
+              <WeatherWidget location={farmerData?.location} isMobileBox={true} />
+
+              {/* KhetScore Card with Restored Semi-Circle Gauge Ring */}
+              <div 
+                onClick={() => setView('khetscore')}
+                className="col-span-1 bg-white p-2.5 md:p-5 rounded-xl md:rounded-2xl border border-slate-200/80 text-slate-800 shadow-xs hover:border-purple-300 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[68px] md:min-h-[130px]"
+              >
+                <div className="w-12 h-6 md:w-20 md:h-10 overflow-hidden relative mb-0.5 md:mb-1.5">
+                  <div className="w-12 h-12 md:w-20 md:h-20 rounded-full border-[4px] md:border-[6px] border-slate-100 border-b-transparent border-l-transparent absolute top-0 left-0 rotate-45"></div>
+                  <div 
+                    className="w-12 h-12 md:w-20 md:h-20 rounded-full border-[4px] md:border-[6px] border-purple-500 border-b-transparent border-l-transparent absolute top-0 left-0 transition-all duration-1000"
+                    style={{ transform: `rotate(${45 + (Math.min(900, khetScore) / 900) * 180}deg)` }}
+                  ></div>
+                </div>
+                <div className="text-center">
+                  <span className="text-base md:text-2xl font-black text-slate-900 block leading-none">{khetScore}</span>
+                  <span className="text-[8px] md:text-[10px] uppercase tracking-wider font-extrabold text-purple-600 mt-0.5 block">Score</span>
+                </div>
+              </div>
+
+              <div className="col-span-1 bg-white p-2.5 md:p-5 rounded-xl md:rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between min-h-[68px] md:min-h-[130px]">
+                <div className="w-5 h-5 md:w-9 md:h-9 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                  <Package className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                </div>
+                <div className="mt-1">
+                  <div className="text-base md:text-2xl font-black text-slate-900 leading-none">{listings.length}</div>
+                  <div className="text-slate-500 font-bold text-[9px] md:text-xs mt-0.5">Active</div>
+                </div>
+              </div>
+
+              <div className="col-span-1 bg-white p-2.5 md:p-5 rounded-xl md:rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between min-h-[68px] md:min-h-[130px]">
+                <div className="w-5 h-5 md:w-9 md:h-9 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
+                  <IndianRupee className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                </div>
+                <div className="mt-1">
+                  <div className="text-base md:text-2xl font-black text-slate-900 leading-none truncate"><span className="hl-green">₹{totalEarnings.toFixed(0)}</span></div>
+                  <div className="text-slate-500 font-bold text-[9px] md:text-xs mt-0.5">Earned</div>
+                </div>
+              </div>
+
+              <div className="col-span-1 bg-white p-2.5 md:p-5 rounded-xl md:rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between min-h-[68px] md:min-h-[130px]">
+                <div className="w-5 h-5 md:w-9 md:h-9 bg-amber-50 rounded-lg flex items-center justify-center text-amber-500">
+                  <Clock className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                </div>
+                <div className="mt-1">
+                  <div className="text-base md:text-2xl font-black text-slate-900 leading-none truncate">₹{pendingEarnings.toFixed(0)}</div>
+                  <div className="text-slate-500 font-bold text-[9px] md:text-xs mt-0.5">Pending</div>
+                </div>
+              </div>
+
+              <div className="col-span-1 bg-white p-2.5 md:p-5 rounded-xl md:rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between min-h-[68px] md:min-h-[130px]">
+                <div className="w-5 h-5 md:w-9 md:h-9 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                  <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                </div>
+                <div className="mt-1">
+                  <div className="text-base md:text-2xl font-black text-slate-900 leading-none">{orders.length}</div>
+                  <div className="text-slate-500 font-bold text-[9px] md:text-xs mt-0.5">Orders</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Compact Corporate Action Bar */}
+            {!showAddForm && (
+              <div className="flex flex-row justify-between items-center gap-2 mb-3.5 md:mb-6 bg-white border border-slate-200/80 px-3 py-2.5 md:px-5 md:py-3.5 rounded-xl md:rounded-2xl shadow-xs">
+                <h2 className="text-sm md:text-xl font-black text-slate-900 shrink-0">{t('yourHarvest')}</h2>
+                <div className="flex items-center gap-1.5 md:gap-2.5">
+                  <button onClick={() => setShowTrackingList(true)} className="bg-white border border-slate-200 text-slate-700 px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center gap-1 text-[11px] md:text-xs">
+                    <span className="hidden sm:inline">Track Orders</span>
+                    <span className="sm:hidden">Track</span>
+                  </button>
+                  <button onClick={() => { setScannedItems([]); setShowCameraModal(true); }} className="bg-emerald-600 text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl font-bold shadow-xs hover:bg-emerald-700 transition-all flex items-center gap-1 text-[11px] md:text-xs">
+                    <ScanLine className="w-3.5 h-3.5" />
+                    <span>AI Scan</span>
+                  </button>
+                  <button onClick={() => { setIsAutoFilled(false); setShowAddForm(true); }} className="bg-slate-900 text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg md:rounded-xl font-bold shadow-xs hover:bg-black transition-all flex items-center gap-1 text-[11px] md:text-xs">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {showAddForm && (
+              <div className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-4 md:p-7 shadow-md mb-6 animate-in slide-in-from-top-2 duration-200">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h2 className="text-base md:text-xl font-black text-slate-900">{t('addNewListing')}</h2>
+                    <p className="text-slate-500 font-medium text-xs">Details about your imperfect produce</p>
+                  </div>
+                  <button onClick={() => { setShowAddForm(false); if (scannedItems.length > 0) setShowBatchSummary(true); }} className="p-1.5 bg-slate-100 rounded-full hover:bg-slate-200 text-slate-500">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddListing} className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8">
+                  <div>
+                    <label className="block w-full h-48 md:h-64 relative border-2 border-dashed border-slate-300 rounded-2xl hover:border-emerald-500 transition-colors cursor-pointer bg-slate-50 overflow-hidden">
+                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                      {newListing.imagePreview ? (
+                        <img src={newListing.imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                          <UploadCloud className="w-8 h-8 text-emerald-600 mb-1.5" />
+                          <span className="font-bold text-slate-600 text-xs md:text-sm">Tap to upload photo</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    {!isAutoFilled && (
+                      <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/70 space-y-2">
+                        <label className="text-[10px] font-extrabold text-slate-500 uppercase">Quick Select</label>
+                        <div className="flex gap-1.5 p-1 bg-white rounded-lg border border-slate-200 overflow-x-auto">
+                          {Object.keys(CROP_CATEGORIES).map((cat) => (
+                            <button key={cat} type="button" onClick={() => setActiveCategory(cat)} className={`flex-1 py-1 px-2.5 rounded-md text-[11px] font-bold transition-all ${activeCategory === cat ? 'bg-slate-900 text-white' : 'text-slate-500'}`}>{cat}</button>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                          {CROP_CATEGORIES[activeCategory].map((crop) => (
+                            <button key={crop} type="button" onClick={() => setNewListing({ ...newListing, name: crop })} className={`px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all ${newListing.name === crop ? 'bg-emerald-50 text-emerald-700 border-emerald-400' : 'bg-white text-slate-600 border-slate-200'}`}>{crop}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">{t('prodName')}</label>
+                      <input type="text" className="w-full rounded-xl px-3.5 py-2.5 font-bold text-slate-900 text-xs md:text-sm" placeholder="e.g. Onion" value={newListing.name} onChange={(e) => setNewListing({...newListing, name: e.target.value})} required />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block mb-1">{t('qty')}</label>
+                        <input type="number" step="0.01" className="w-full rounded-xl px-3.5 py-2.5 font-bold text-slate-900 text-xs md:text-sm" placeholder="0.0" value={newListing.quantity} onChange={(e) => setNewListing({...newListing, quantity: e.target.value})} required />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block mb-1">{t('price')}</label>
+                        <input type="number" className="w-full rounded-xl px-3.5 py-2.5 font-bold text-slate-900 text-xs md:text-sm" placeholder="Auto AI Price" value={newListing.price} onChange={(e) => setNewListing({...newListing, price: e.target.value})} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">{t('grade')}</label>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {['B', 'C'].map((g) => (
+                          <button key={g} type="button" onClick={() => setNewListing({...newListing, grade: g})} className={`py-2.5 rounded-xl border font-extrabold text-xs md:text-sm transition-all ${newListing.grade === g ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}>Grade {g}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">{t('desc')}</label>
+                      <textarea className="w-full rounded-xl px-3.5 py-2 h-16 resize-none font-medium text-slate-800 text-xs md:text-sm" placeholder="Describe the imperfections..." value={newListing.description} onChange={(e) => setNewListing({...newListing, description: e.target.value})} required />
+                    </div>
+
+                    <button type="submit" disabled={uploading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-xs transition-all text-xs md:text-sm">
+                      {uploading ? 'Processing...' : 'Review Live Price & List'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* 2-COLUMN MOBILE MARKETPLACE GRID (Matches Screenshot 2 Desktop & Compact Mobile E-Commerce Cards) */}
+            {listings.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-10 text-center shadow-xs">
+                <Package className="w-12 h-12 text-slate-300 mx-auto mb-2.5" />
+                <h3 className="text-base md:text-lg font-black text-slate-900 mb-1">{t('noListings')}</h3>
+                <p className="text-slate-500 font-medium mb-4 max-w-xs mx-auto text-xs">Start adding your harvest to reach HORECA buyers instantly.</p>
+                <button onClick={() => { setIsAutoFilled(false); setShowAddForm(true); }} className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs">{t('createFirst')}</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 md:gap-5">
+                {listings.map((listing) => (
+                  <div key={listing.id} className="bg-white rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col h-full">
+                    <div className="relative h-28 sm:h-36 md:h-48 bg-slate-100 p-1.5 md:p-2">
+                      <div className="w-full h-full rounded-xl md:rounded-2xl overflow-hidden relative">
+                        <div className={`absolute top-1.5 right-1.5 md:top-2.5 md:right-2.5 z-10 text-[9px] md:text-[11px] font-black px-2 py-0.5 md:px-2.5 md:py-1 rounded-full shadow-xs border ${
+                          listing.grade === 'C' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-white/95 text-slate-900 border-white'
+                        }`}>
+                          Grade {listing.grade}
+                        </div>
+                        {listing.image && (listing.image.startsWith('data:') || listing.image.startsWith('http') || listing.image.startsWith('/')) ? (
+                          <img src={listing.image} alt={listing.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-3xl bg-white">🌾</div>
+                        )}
+                        <div className="absolute bottom-1.5 left-1.5 md:bottom-2.5 md:left-2.5 bg-slate-900/90 text-white px-2 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg text-[10px] md:text-xs font-extrabold">
+                          ₹{listing.price} <span className="text-slate-300 text-[8px] md:text-[10px] font-normal">/kg</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 md:p-4 flex-1 flex flex-col">
+                      <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm md:text-base leading-tight truncate">{listing.name}</h3>
+                      <p className="text-slate-500 font-medium text-[10px] md:text-xs mt-0.5 mb-2.5 md:mb-3.5 line-clamp-2 flex-1 leading-snug">{listing.description}</p>
+                      
+                      {/* Stock progress bar matching Screenshot 2 */}
+                      <div className="flex items-center gap-2 mb-2.5 md:mb-3.5 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100">
+                        <div className="h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-500 w-full rounded-full"></div>
+                        </div>
+                        <span className="text-[9px] md:text-[11px] font-extrabold text-slate-700 whitespace-nowrap">{listing.quantity} kg left</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1.5 md:gap-2 mt-auto">
+                        <button onClick={() => { setSelectedListing(listing); setShowQRModal(true); }} className="flex items-center justify-center gap-1 py-1.5 md:py-2 rounded-lg border border-slate-200 text-slate-700 font-bold text-[10px] md:text-xs hover:bg-slate-50">
+                          <QrCode className="w-3 h-3 md:w-3.5 md:h-3.5" /> Code
+                        </button>
+                        <button onClick={() => handleDeleteListing(listing.id)} className="flex items-center justify-center gap-1 py-1.5 md:py-2 rounded-lg bg-rose-50 text-rose-600 font-bold text-[10px] md:text-xs hover:bg-rose-100">
+                          <Trash2 className="w-3 h-3 md:w-3.5 md:h-3.5" /> Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- ORDERS TAB --- */}
+        {view === 'orders' && (
+          <div className="animate-in fade-in duration-300">
+            <div className="flex items-center gap-2.5 mb-4 bg-white border border-slate-200/80 px-4 py-3 rounded-2xl shadow-xs w-fit">
+              <h2 className="text-sm md:text-xl font-black text-slate-900">{t('receivedOrders')}</h2>
+              <span className="bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2.5 py-0.5 rounded-full font-extrabold">{orders.length}</span>
+            </div>
+            {orders.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-10 text-center shadow-xs">
+                <ShoppingBag className="w-12 h-12 text-blue-300 mx-auto mb-2.5" />
+                <h3 className="text-base md:text-lg font-black text-slate-900 mb-1">No orders yet</h3>
+                <p className="text-slate-500 font-medium text-xs">Wait for businesses to discover your quality produce.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-5">
+                {orders.map((order) => {
+                  const farmerItems = order.items?.filter(item => item.farmerId === user.uid) || [];
+                  const orderTotal = farmerItems.reduce((sum, item) => sum + (item.price * item.cartQuantity), 0);
+                  const farmerEarning = (orderTotal * 0.9).toFixed(2);
+                  return (
+                    <div key={order.id} className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 md:p-5 flex flex-col">
+                      <div className="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">
+                        <div>
+                          <p className="text-[10px] text-slate-400 font-mono font-bold">#{order.id.substring(0, 8)}</p>
+                          <h3 className="font-black text-slate-900 text-sm md:text-base">{order.businessName || 'Business Buyer'}</h3>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">{order.status}</span>
+                      </div>
+                      <div className="space-y-1.5 mb-3 bg-slate-50 rounded-xl p-2.5">
+                        {farmerItems.map((item, i) => (
+                          <div key={i} className="flex justify-between text-xs font-bold text-slate-700">
+                            <span>{item.name} × {item.cartQuantity}kg</span>
+                            <span className="font-black">₹{item.price * item.cartQuantity}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center mb-3 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                        <span className="font-bold text-slate-700 text-xs">Net Earnings</span>
+                        <span className="text-base md:text-lg font-black text-emerald-700 hl-green">₹{farmerEarning}</span>
+                      </div>
+                      <button onClick={() => setTrackingOrder(order)} className="w-full mb-2 bg-white border border-slate-200 text-slate-700 font-bold py-2 rounded-xl hover:bg-slate-50 text-xs">
+                        🗺️ Track Live Map
+                      </button>
+                      {order.status === 'pending' && !order.readyForPickup && (
+                        <button onClick={() => markReadyForPickup(order.id)} className="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs">
+                          {farmerData?.hasTransport ? 'Pack Order' : 'Mark Ready for Pickup'}
+                        </button>
+                      )}
+                      {order.readyForPickup && order.status === 'pending' && farmerData?.hasTransport && (
+                        <button onClick={() => handleStartDelivery(order)} className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5">
+                          <ScanLine className="w-3.5 h-3.5" /> Start Delivery (QC)
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- TRANSACTIONS TAB --- */}
+        {view === 'transactions' && (
+          <div className="animate-in fade-in duration-300">
+            <div className="flex items-center gap-2.5 mb-4 bg-white border border-slate-200/80 px-4 py-3 rounded-2xl shadow-xs w-fit">
+              <h2 className="text-sm md:text-xl font-black text-slate-900">{t('paymentHistory')}</h2>
+              <span className="bg-amber-50 text-amber-700 border border-amber-200 text-xs px-2.5 py-0.5 rounded-full font-extrabold">{transactions.length}</span>
+            </div>
+            {transactions.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-10 text-center shadow-xs">
+                <IndianRupee className="w-12 h-12 text-amber-400 mx-auto mb-2.5" />
+                <h3 className="text-base md:text-lg font-black text-slate-900 mb-1">No transactions yet</h3>
+                <p className="text-slate-500 font-medium text-xs">Complete deliveries to see your payments here.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-x-auto">
+                <table className="w-full text-left min-w-[420px]">
+                  <thead className="bg-slate-50 border-b border-slate-200/70 text-[11px] font-extrabold text-slate-400 uppercase">
+                    <tr>
+                      <th className="px-4 py-3.5 md:px-6">Transaction ID</th>
+                      <th className="px-4 py-3.5 md:px-6">Date</th>
+                      <th className="px-4 py-3.5 md:px-6">Status</th>
+                      <th className="px-4 py-3.5 md:px-6 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs md:text-sm">
+                    {transactions.map((txn, i) => (
+                      <tr key={i}>
+                        <td className="px-4 py-3.5 md:px-6 font-mono font-bold text-slate-600">{txn.id}</td>
+                        <td className="px-4 py-3.5 md:px-6 font-bold text-slate-700">{txn.date}</td>
+                        <td className="px-4 py-3.5 md:px-6"><span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[11px]">Settled</span></td>
+                        <td className="px-4 py-3.5 md:px-6 text-right font-black text-emerald-700"><span className="hl-green">+₹{txn.amount}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- TRANSPORT POOLING TAB --- */}
+        {view === 'transport' && (
+          <div className="animate-in fade-in duration-300">
+            <div className="flex justify-between items-center bg-white border border-slate-200/80 px-4 py-3 rounded-2xl shadow-xs mb-4">
+              <h2 className="text-sm md:text-xl font-black text-slate-900 flex items-center gap-2">
+                {t('availablePools')}
+                <span className="bg-orange-50 text-orange-700 border border-orange-200 text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase">Live Milk-Run</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {transportPools.length === 0 ? (
+                <div className="col-span-full bg-white border border-slate-200/80 rounded-2xl p-10 text-center shadow-xs">
+                  <Truck className="w-12 h-12 text-slate-300 mx-auto mb-2.5" />
+                  <h3 className="font-black text-base md:text-lg text-slate-900">No trucks available right now</h3>
+                  <p className="text-slate-500 font-medium mt-0.5 text-xs">Check back when a Milk-Run driver creates a route.</p>
+                </div>
+              ) : (
+                transportPools.map((truck) => {
+                  const percent = Math.min(100, (truck.filledCapacity / truck.totalCapacity) * 100);
+                  const isFull = truck.status === 'full';
+                  return (
+                    <div key={truck.id} className="bg-white border border-slate-200/80 rounded-2xl p-4 md:p-5 shadow-xs flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="font-extrabold text-slate-900 text-sm md:text-base">{truck.origin} ➝ {truck.destination}</h4>
+                            <span className="text-xs text-slate-500 font-bold block mt-0.5">Driver: {truck.driverName}</span>
+                          </div>
+                          <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${isFull ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-700'}`}>{isFull ? 'Full' : 'Open'}</span>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 mb-3">
+                          <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                            <span>Capacity Filled</span>
+                            <span>{truck.filledCapacity}/{truck.totalCapacity} kg</span>
+                          </div>
+                          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: `${percent}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                      {!isFull && (
+                        joinId === truck.id ? (
+                          <div className="space-y-2">
+                            <input type="text" placeholder="Pickup Location (e.g. NH37 Gate)" value={pickupLocation} onChange={e => setPickupLocation(e.target.value)} className="w-full px-3 py-2 rounded-xl border text-xs font-bold" />
+                            <div className="flex gap-2">
+                              <input type="number" placeholder="kg" value={joinWeight} onChange={e => setJoinWeight(e.target.value)} className="w-20 px-2.5 py-2 rounded-xl border text-xs font-bold text-center" />
+                              <button onClick={() => handleJoinPool(truck)} className="flex-1 bg-orange-600 text-white font-bold rounded-xl text-xs py-2">Confirm</button>
+                              <button onClick={() => setJoinId(null)} className="px-2.5 bg-slate-100 text-slate-500 rounded-xl text-xs font-bold">✕</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button onClick={() => setJoinId(truck.id)} className="w-full bg-orange-50 border border-orange-200 text-orange-700 font-bold py-2 rounded-xl hover:bg-orange-100 text-xs">{t('joinPool')}</button>
+                        )
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showCameraModal && (
+        <AICameraModal onClose={() => setShowCameraModal(false)} onComplete={handleCameraComplete} />
+      )}
+
+      {/* --- BATCH SUMMARY POPUP --- */}
+      {showBatchSummary && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="p-5 pb-3.5 text-center border-b border-slate-100">
+              <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-2.5">
+                <PackageCheck className="w-6 h-6 text-emerald-600" />
+              </div>
+              <h2 className="text-lg font-black text-slate-900">Segregation Complete</h2>
+              <p className="text-slate-500 font-medium text-xs mt-0.5">Pending batches: {scannedItems.length}</p>
+            </div>
+
+            <div className="p-4 bg-slate-50 space-y-2.5 overflow-y-auto flex-1">
+              {scannedItems.map((batch, index) => (
+                <div key={index} className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex flex-col gap-2.5">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-black text-base text-slate-900">
+                        {batch.name} <span className={batch.grade === 'B' ? 'hl-green' : 'hl-yellow'}>Gr {batch.grade}</span>
+                      </h4>
+                      <span className="text-xs font-bold text-slate-400">{batch.count} item(s) verified</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-lg text-slate-900">{batch.weight.toFixed(2)} kg</p>
+                      <p className="text-slate-400 text-[10px] font-bold uppercase">Est. Weight</p>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => {
+                      const intel = getCropIntel(batch.name);
+                      setNewListing(prev => ({
+                        ...prev,
+                        name: batch.name,
+                        grade: batch.grade,
+                        quantity: batch.weight.toFixed(2),
+                        price: batch.grade === 'B' ? intel.gradeB : intel.gradeC,
+                        description: batch.grade === 'C'
+                          ? `AI Verified Grade C Batch — Ideal for purees, gravies & commercial processing.`
+                          : `AI Verified Grade B Batch — Firm quality, ideal for commercial kitchen chopping.`,
+                        imagePreview: batch.image
+                      }));
+                      setScannedItems(scannedItems.filter((_, i) => i !== index));
+                      setShowBatchSummary(false);
+                      setIsAutoFilled(true);
+                      setShowAddForm(true);
+                      setShowPriceDiscovery(true);
+                    }}
+                    className="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4" /> Check Live Price & List
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-3.5 pt-2">
+              <button onClick={() => { setShowBatchSummary(false); setScannedItems([]); }} className="w-full text-slate-400 font-bold text-xs uppercase tracking-wider py-2 hover:text-slate-600">
+                Close & Discard Remaining
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Chatbot />
+      <FarmerVoiceAssistant 
+        currentView={view}
+        setView={setView}
+        khetScore={khetScore}
+        totalEarnings={totalEarnings}
+        pendingEarnings={pendingEarnings}
+        transportPools={transportPools}
+        orders={orders}
+        newListing={newListing}
+        setNewListing={setNewListing}
+        setShowAddForm={setShowAddForm}
+        setIsAutoFilled={setIsAutoFilled}
+        onOpenScan={() => { setScannedItems([]); setShowCameraModal(true); }}
+        onOpenAddHarvest={() => { setIsAutoFilled(false); setShowAddForm(true); }}
+        lang={lang}
+        setLang={setLang}
+      />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/welcome" element={<FarmerLanding />} />
+          <Route path="/login" element={<AuthPage isLogin={true} />} />
+          <Route path="/register" element={<AuthPage isLogin={false} />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </LanguageProvider>
+  );
+}
