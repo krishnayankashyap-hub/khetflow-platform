@@ -87,8 +87,9 @@ This rejected produce doesn't just mean lost vegetables. It directly causes:
 
 <br/>
 
-> **KhetFlow is an AI-driven B2B operating EcoSystem specifically built for Imperfect Produce (Grade B and C).**<br/>
-> It acts as an end-to-end market-intelligence and transaction enablement solution. Commercial kitchens, food processors, restaurants, and institutional B2B buyers do not care whether an onion is perfectly shaped. They care about **quality, volume, and cost**. KhetFlow bridges this massive gap through a powerful 4-part ecosystem.
+### **KhetFlow is an AI-driven B2B operating EcoSystem specifically built for Imperfect Produce (Grade B and C).**
+
+**It acts as an end-to-end market-intelligence and transaction enablement solution. Commercial kitchens, food processors, restaurants, and institutional B2B buyers do not care whether an onion is perfectly shaped. They care about quality, volume, and cost. KhetFlow bridges this massive gap through a powerful 4-part ecosystem.**
 
 </div>
 
@@ -211,24 +212,29 @@ This transforms informal farmers into financially visible participants, unlockin
 
 ---
 
-# 🛠️ Tech Stack
+# 🛠️ Comprehensive Tech Stack
 
-### 💻 Frontend & UI
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+<div align=center>
 
-### ⚙️ Backend & Database
-![Firebase](https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase)
-![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+| Architecture Layer | Technologies, Frameworks & Tooling | Core Capabilities & Integration Role |
+| :--- | :--- | :--- |
+| **Frontend Frameworks** | ![React](https://img.shields.io/badge/React_19%2F18-%2320232a.svg?style=flat-square&logo=react&logoColor=%2361DAFB) ![Vite](https://img.shields.io/badge/Vite_8%2F7%2F5-%23646CFF.svg?style=flat-square&logo=vite&logoColor=white) ![JavaScript](https://img.shields.io/badge/ESNext_JS-F7DF1E?style=flat-square&logo=javascript&logoColor=black) | High-performance reactive SPAs across Landing Website, Farmer Portal, Business Portal & Rider Console. |
+| **Routing & Navigation** | ![React Router](https://img.shields.io/badge/React_Router_v6-CA4245?style=flat-square&logo=react-router&logoColor=white) | Protected authentication guards, multi-portal role isolation, and synchronized browser history. |
+| **Styling & Design System** | ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) ![PostCSS](https://img.shields.io/badge/PostCSS-DD3A0A?style=flat-square&logo=postcss&logoColor=white) ![Lucide](https://img.shields.io/badge/Lucide_Icons-F56565?style=flat-square) | Executive corporate B2B design, editorial marker highlighters (`hl-green`, `hl-amber`), and responsive bottom docks. |
+| **Backend & Cloud DB** | ![Firebase Auth](https://img.shields.io/badge/Firebase_Auth-FFCA28?style=flat-square&logo=firebase&logoColor=black) ![Cloud Firestore](https://img.shields.io/badge/Cloud_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black) | Real-time WebSocket subscriptions, atomic increments, array unions, and email/10-digit phone authentication. |
+| **Cloud Hosting & Deployment** | ![Firebase Hosting](https://img.shields.io/badge/Firebase_Hosting-0288D1?style=flat-square&logo=firebase&logoColor=white) | Global edge CDN deployments with multi-target hosting configurations (`farmer-portal`, `business-portal`, `rider-portal`). |
+| **LPU AI Acceleration** | ![Groq Cloud](https://img.shields.io/badge/Groq_LPU_Inference-F58025?style=flat-square) | Sub-second ultra-low latency multimodal inference for live camera frame inspection. |
+| **Vision & Grading AI** | ![Qwen](https://img.shields.io/badge/Qwen_3.8--27B_Vision-6366F1?style=flat-square) ![Meta Llama](https://img.shields.io/badge/Meta_Llama--4_Scout_17B-0467DF?style=flat-square&logo=meta&logoColor=white) | Mixed-batch produce detection, cosmetic asymmetry tagging, and Grade B vs. C segregation. |
+| **Local Vision & Texture Audit** | ![HTML5 Canvas](https://img.shields.io/badge/HTML5_Canvas_API-E34F26?style=flat-square&logo=html5&logoColor=white) | Connected-component RGB/HSV blob segmentation and surface wrinkle/pit micro-contrast grading algorithm. |
+| **Multilingual Voice Engine** | ![Web Speech API](https://img.shields.io/badge/Web_Speech_API-4285F4?style=flat-square&logo=google&logoColor=white) | Natural conversational voice assistant in Assamese (অসমীয়া), Hindi (हिंदी), English, Punjabi, Urdu, and Haryanvi. |
+| **Cryptographic Handoffs** | ![Web Crypto](https://img.shields.io/badge/Web_Crypto_API-374151?style=flat-square) ![SHA-256](https://img.shields.io/badge/SHA--256_Seals-059669?style=flat-square) | Tamper-evident lot origin hashing, digital escrow release, and non-repudiation seals. |
+| **QR Code Verification** | ![HTML5-QRCode](https://img.shields.io/badge/HTML5_QRCode_Scanner-10B981?style=flat-square) ![React-QR-Code](https://img.shields.io/badge/React_QR_Generator-0F766E?style=flat-square) | Zero-dependency camera scanning for farm crate seals, milk-run handoffs, and delivery proofs. |
+| **Logistics & GIS Telemetry** | ![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=flat-square&logo=openstreetmap&logoColor=white) ![Leaflet.js](https://img.shields.io/badge/Leaflet.js_v1.9-199900?style=flat-square&logo=leaflet&logoColor=white) | Zero-API-key global cartography, waypoint clustering, vehicle tracking, and animated transit polylines. |
+| **Spatial Intelligence** | ![Overpass API](https://img.shields.io/badge/Overpass_API-1E293B?style=flat-square) ![Nominatim](https://img.shields.io/badge/Nominatim_OSM-0284C7?style=flat-square) | Real-time commercial kitchen (HORECA) node density queries and reverse corridor geocoding. |
+| **Agri-Market Pricing Engine** | ![Agmarknet](https://img.shields.io/badge/Agmarknet_API-15803D?style=flat-square) | Real-time wholesale mandi rates, modal price discovery, and corridor demand surge modeling. |
+| **Credit & Risk Engine** | ![KhetScore Engine](https://img.shields.io/badge/KhetScore_Proprietary-8B5CF6?style=flat-square) | Non-linear alternative credit scoring algorithm evaluating delivery consistency, volume, and crop diversity. |
 
-### 🧠 AI & Computer Vision
-![Groq](https://img.shields.io/badge/Groq_Cloud-F58025?style=for-the-badge)
-![Meta](https://img.shields.io/badge/Meta_Llama_4-0467DF?style=for-the-badge&logo=meta&logoColor=white)
-
-### 🗺️ Logistics & Geospatial
-![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)
-![Leaflet](https://img.shields.io/badge/Leaflet.js-199900?style=for-the-badge&logo=leaflet&logoColor=white)
+</div>
 
 ---
 
